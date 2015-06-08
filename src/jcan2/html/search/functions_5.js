@@ -1,0 +1,21 @@
+var searchData=
+[
+  ['getdata',['getData',['../classjcan2_1_1_main_window.html#a17a976a3fb9eaf562f221e912d5d033c',1,'jcan2::MainWindow']]],
+  ['getdatafromdevice',['getDataFromDevice',['../classjcan2_1_1_serial.html#ac148e30d986f78e80022c5f627045896',1,'jcan2::Serial']]],
+  ['getdatapointjson',['getDataPointJSON',['../classjcan2_1_1_data_point.html#a6533f6ff0949652b20df717d0efb88e1',1,'jcan2::DataPoint']]],
+  ['getfrombemapserver',['getFromBeMapServer',['../classjcan2_1_1_server_communication.html#af9ec010ba3907cd44c7264a9ca39b7b4',1,'jcan2::ServerCommunication']]],
+  ['getgoogleroadsegment',['getGoogleRoadSegment',['../classjcan2_1_1_server_communication.html#af319ec6a3c936569fd5fc8420c75c589',1,'jcan2::ServerCommunication']]],
+  ['getid',['getID',['../classjcan2_1_1_data.html#ac01b895f3f98273d490b38a7c76d51c7',1,'jcan2::Data']]],
+  ['getlayername',['getLayerName',['../classjcan2_1_1_data.html#a256dfb10ac552c7aeb30d3da55d90ee3',1,'jcan2::Data']]],
+  ['getmap',['getMap',['../classjcan2_1_1_main_window.html#a908cd7e289a6d50826c205c508d7b2d4',1,'jcan2::MainWindow']]],
+  ['getnearestpoint',['getNearestPoint',['../classjcan2_1_1_data.html#a24ef6e22080180bb42d1c202888435a6',1,'jcan2::Data']]],
+  ['getnumberofpoints',['getNumberOfPoints',['../classjcan2_1_1_serial.html#ac225ddb960cfdf0a36b809b850fa9ec6',1,'jcan2::Serial']]],
+  ['getoldestdate',['getOldestDate',['../classjcan2_1_1_data.html#a767317eee1bdebafbb6a1870c45189d6',1,'jcan2::Data']]],
+  ['getsensor',['getSensor',['../classjcan2_1_1_data_point.html#aafce513bf728afc72c7c6e14066cab77',1,'jcan2::DataPoint']]],
+  ['getsensornumber',['getSensorNumber',['../classjcan2_1_1_main_window.html#a574826236fa728ad7618a8c44d5aec45',1,'jcan2::MainWindow']]],
+  ['gettimeslidervalue',['getTimeSliderValue',['../classjcan2_1_1_main_window.html#a5e1b4b017803b0a88e5615660c6c49a6',1,'jcan2::MainWindow']]],
+  ['gettimespread',['getTimeSpread',['../classjcan2_1_1_main_window.html#a6bd8e11c6639e62ede6b6353d3642c1d',1,'jcan2::MainWindow']]],
+  ['getusr',['getUsr',['../classjcan2_1_1_main_window.html#ab6a9c4617391bc8fe841f08c892be7ce',1,'jcan2.MainWindow.getUsr()'],['../classjcan2_1_1_serial.html#af5fc1fe3bbd70f909545ce3434dca503',1,'jcan2.Serial.getUsr()']]],
+  ['getusrstring',['getUsrString',['../classjcan2_1_1_main_window.html#af6b8b8fbee6b614e85fdaff84ee3ea16',1,'jcan2::MainWindow']]],
+  ['getyoungestdate',['getYoungestDate',['../classjcan2_1_1_data.html#a2d7ae999180ddbf6308b58c7d370c508',1,'jcan2::Data']]]
+];

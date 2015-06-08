@@ -1,0 +1,50 @@
+\hypertarget{classjcan2_1_1_be_map_editor}{}\section{jcan2.\+Be\+Map\+Editor Class Reference}
+\label{classjcan2_1_1_be_map_editor}\index{jcan2.\+Be\+Map\+Editor@{jcan2.\+Be\+Map\+Editor}}
+
+
+Collaboration diagram for jcan2.\+Be\+Map\+Editor\+:
+% FIG 0
+\subsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+static void \hyperlink{classjcan2_1_1_be_map_editor_ad8e3484bba17c98951d63e1a985453ae}{main} (String args\mbox{[}$\,$\mbox{]})
+\end{DoxyCompactItemize}
+\subsection*{Static Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{classjcan2_1_1_be_map_editor_a7d5966d0d4a03cc411d8efc2dd43e1e7}{}static int {\bfseries M\+A\+P\+M\+A\+R\+K\+E\+R\+\_\+\+R} = 5\label{classjcan2_1_1_be_map_editor_a7d5966d0d4a03cc411d8efc2dd43e1e7}
+
+\item 
+\hypertarget{classjcan2_1_1_be_map_editor_a1661a94ed04d01ab32fe84e9fbfb6ad5}{}static \hyperlink{classjcan2_1_1_main_window}{Main\+Window} {\bfseries main\+Window}\label{classjcan2_1_1_be_map_editor_a1661a94ed04d01ab32fe84e9fbfb6ad5}
+
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Opens a window and imports the data in the .bemap file that is in the same directory than the software. \begin{DoxyAuthor}{Author}
+Micha Burger 
+\end{DoxyAuthor}
+
+
+\subsection{Member Function Documentation}
+\hypertarget{classjcan2_1_1_be_map_editor_ad8e3484bba17c98951d63e1a985453ae}{}\index{jcan2\+::\+Be\+Map\+Editor@{jcan2\+::\+Be\+Map\+Editor}!main@{main}}
+\index{main@{main}!jcan2\+::\+Be\+Map\+Editor@{jcan2\+::\+Be\+Map\+Editor}}
+\subsubsection[{main}]{\setlength{\rightskip}{0pt plus 5cm}static void jcan2.\+Be\+Map\+Editor.\+main (
+\begin{DoxyParamCaption}
+\item[{String}]{args\mbox{[}$\,$\mbox{]}}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}\label{classjcan2_1_1_be_map_editor_ad8e3484bba17c98951d63e1a985453ae}
+Opens a window and imports the data in the .bemap file that is in the same directory than the software. \begin{DoxyAuthor}{Author}
+Micha Burger 
+\end{DoxyAuthor}
+
+
+Here is the call graph for this function\+:
+% FIG 1
+
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+Be\+Map\+Editor.\+java\end{DoxyCompactItemize}
