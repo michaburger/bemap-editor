@@ -21,6 +21,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.openstreetmap.gui.jmapviewer.Coordinate;
 import org.openstreetmap.gui.jmapviewer.JMapViewer;
+import org.openstreetmap.gui.jmapviewer.Layer;
 import org.openstreetmap.gui.jmapviewer.MapMarkerCircle;
 import org.openstreetmap.gui.jmapviewer.MapMarkerDot;
 import org.openstreetmap.gui.jmapviewer.MapPolygonImpl;
@@ -50,8 +51,8 @@ public class Data {
     private String layerName;
     private static final int GLOBAL = 0;
     
-    private static final int NB_POINTS = 8; //for polygon, 360/n must be an int
-    private static final double R_GLOBAL = 0.0003;
+    private static final int NB_POINTS = 18; //for polygon, 360/n must be an int
+    private static final double GLOBAL_R = 0.0003;
            
     
     private final int TYPE_POLL1 = 1; //type definition for the drawn color ranges
@@ -381,6 +382,26 @@ public class Data {
     }
     
     /**
+     * Creates a JSONArray containing all the points of the data layer
+     * @return JSONArray containing JSONObjects (datapoints)
+     * @throws JSONException 
+     */
+    public JSONArray exportJSONListServer() throws JSONException{
+   
+        //this will be the track array of one single track.
+        JSONArray jsonArray = new JSONArray();
+        
+        Iterator<DataPoint> it = pointList.iterator();
+        while(it.hasNext())
+        {
+            DataPoint p = it.next();
+            if(!p.isOnServer()) jsonArray.put(p.getDataPointJSON());
+        }
+
+        return jsonArray;
+    }
+    
+    /**
      * Imports an entire JSONArray of points, overwrites the current list and draws
      * the points on the map if the boolean draw is set true.
      * @return returns the number of points stored.
@@ -467,7 +488,7 @@ public class Data {
         
         
         if(style == BeMapEditor.settings.NORMAL){
-            Color col = chooseColor(value,type,0);
+            Color col = chooseColor(value,type,255);
             MapMarkerDot point = new MapMarkerDot(col,lat,lon);
             point.setBackColor(col);
         
@@ -475,29 +496,35 @@ public class Data {
             map.setMapMarkerVisible(true);
         }
         else if(style == BeMapEditor.settings.CLOUD){
-            Color col = chooseColor(value,type,0);
+            Color col = chooseColor(value,type,BeMapEditor.settings.getTransparency());
             MapPolygon poly = getPolygon(lat,lon,col);
         
             map.addMapPolygon(poly);
             map.setMapPolygonsVisible(true);
         }
+        else BeMapEditor.mainWindow.append("\nIntern error: No style selected!");
         
         }
     
-    private MapPolygon getPolygon(double lat, double lon,Color col){
+    private MapPolygon getPolygon(double lat, double lon, Color col){
         List<Coordinate> coords = new ArrayList<>();
         int dalpha = 360 / NB_POINTS;
+       
         for(int i=0; i<NB_POINTS;i++){
             int alpha = i*dalpha;
-            double dx = R_GLOBAL * Math.cos(alpha);
-            double dy = R_GLOBAL * Math.sin(alpha);
-            Coordinate c = new Coordinate(lat+dx,lon+dy);
+            double dx = GLOBAL_R * Math.cos(alpha);
+            double dy = GLOBAL_R * Math.sin(alpha);
+            Coordinate c = new Coordinate(lat+dy,lon+dx);
             coords.add(c);
         }
-        Stroke s = new BasicStroke(0);
-        
-        MapPolygon poly = new MapPolygonImpl(coords);
+        Layer global = new Layer("Global");
+        Style style = new Style();
+        style.setBackColor(col);
+        style.setColor(col);
+        style.setStroke(new BasicStroke(0));
+        MapPolygon poly = new MapPolygonImpl(global,"",coords,style);
         return poly;
+        
     }
     
     private Color chooseColor(int value, int type, int opacity){
@@ -591,6 +618,7 @@ public class Data {
      */
     public void removeMapMarkers(){
         BeMapEditor.mainWindow.getMap().removeAllMapMarkers();
+        BeMapEditor.mainWindow.getMap().removeAllMapPolygons();
     }
     
     /**
