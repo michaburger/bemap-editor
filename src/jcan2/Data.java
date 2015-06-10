@@ -2,21 +2,31 @@
 
 package jcan2;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Graphics;
 import java.awt.Point;
+import java.awt.Shape;
+import java.awt.Stroke;
 import java.io.UnsupportedEncodingException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Iterator;
+import java.util.List;
 import org.jfree.data.xy.XYSeries;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.openstreetmap.gui.jmapviewer.Coordinate;
 import org.openstreetmap.gui.jmapviewer.JMapViewer;
+import org.openstreetmap.gui.jmapviewer.MapMarkerCircle;
 import org.openstreetmap.gui.jmapviewer.MapMarkerDot;
+import org.openstreetmap.gui.jmapviewer.MapPolygonImpl;
+import org.openstreetmap.gui.jmapviewer.Style;
+import org.openstreetmap.gui.jmapviewer.interfaces.ICoordinate;
+import org.openstreetmap.gui.jmapviewer.interfaces.MapPolygon;
 
 /**
  *The class Data generates a new "data layer" for the map that contains
@@ -38,7 +48,11 @@ public class Data {
     private final String ERROR_MSG_NO_VALUES = "No values stored in the device. Could not be imported\n";
     private int trackID;
     private String layerName;
+    private static final int GLOBAL = 0;
     
+    private static final int NB_POINTS = 8; //for polygon, 360/n must be an int
+    private static final double R_GLOBAL = 0.0003;
+           
     
     private final int TYPE_POLL1 = 1; //type definition for the drawn color ranges
     private final int TYPE_POLL2 = 2;
@@ -305,6 +319,8 @@ public class Data {
     public void drawAllPoints(){
         long timespread = BeMapEditor.mainWindow.getTimeSliderValue();
         if(DATA_DEBUG) BeMapEditor.mainWindow.append("Time slider: "+timespread+"\n");
+        int style = BeMapEditor.settings.NORMAL;
+        if(trackID == GLOBAL) style = BeMapEditor.settings.getGlobalStyle();
         
         if(pointList.size()>0){
           //iterate through point list
@@ -312,7 +328,7 @@ public class Data {
               //for every point dp, do
               //only draw points in the time spread
               if(!BeMapEditor.mainWindow.timeSliderActive() || dp.dateTime == timespread){
-              drawPoint(dp.lat(),dp.lon(),dp.getSensor(BeMapEditor.mainWindow.getSensorNumber()),BeMapEditor.mainWindow.getSensorNumber());
+              drawPoint(dp.lat(),dp.lon(),dp.getSensor(BeMapEditor.mainWindow.getSensorNumber()),BeMapEditor.mainWindow.getSensorNumber(),style);
               }
               //else if (DATA_DEBUG) BeMapEditor.mainWindow.append("Point ignored due to time slider\n");
           }
@@ -402,6 +418,43 @@ public class Data {
 
     }
     
+    /**
+     * Imports an entire JSONArray of points, overwrites the current list and draws
+     * the points on the map if the boolean draw is set true.
+     * @return returns the number of points stored.
+     * @param gpsData JSONArray containing JSONObjects (points)
+     * @param draw draw points on the map if true
+     * @throws JSONException 
+     */
+    public int importJSONListServer(JSONArray gpsData) throws JSONException{
+
+        
+        //attention: value for s4 corresponds to a temperature. it should be drawn in a blue-orange color range.
+        
+        
+        int pointsNumber = gpsData.length();
+        
+          for(int j = 0; j < pointsNumber; j++)
+          {
+           JSONObject innerObj = new JSONObject(gpsData.getJSONObject(j).toString());
+            //Iterate through the elements of the array j.
+            double lat = innerObj.getDouble("lat");
+            double lon = innerObj.getDouble("lon");
+            long date = innerObj.getLong("date");
+            long time = innerObj.getLong("time");
+            int s1 = innerObj.getInt("s1");
+            int s2 = innerObj.getInt("s2");
+            int s3 = innerObj.getInt("s3");
+            int s4 = innerObj.getInt("s4"); //temperature
+            int s5 = innerObj.getInt("s5"); //acc
+            
+            storePoint(lat,lon,date,time,s1,s2,s3,s4,s5,true);
+            
+          }
+        return pointsNumber;
+
+    }
+    
     /** 
      * Plots the points on the map.  
      * @param lat latitude in decimal degrees format
@@ -409,8 +462,45 @@ public class Data {
      * @param value is a value between 0 and 255 that defines the color from green to red. (0 to 100 for humidity and -100 to +100 for temperature)
      * @param type is the type of the value (sensor number), defines the color range.
      */
-    public void drawPoint(double lat, double lon, int value, int type){
+    public void drawPoint(double lat, double lon, int value, int type, int style){
         JMapViewer map = BeMapEditor.mainWindow.getMap();
+        
+        
+        if(style == BeMapEditor.settings.NORMAL){
+            Color col = chooseColor(value,type,0);
+            MapMarkerDot point = new MapMarkerDot(col,lat,lon);
+            point.setBackColor(col);
+        
+            map.addMapMarker(point);
+            map.setMapMarkerVisible(true);
+        }
+        else if(style == BeMapEditor.settings.CLOUD){
+            Color col = chooseColor(value,type,0);
+            MapPolygon poly = getPolygon(lat,lon,col);
+        
+            map.addMapPolygon(poly);
+            map.setMapPolygonsVisible(true);
+        }
+        
+        }
+    
+    private MapPolygon getPolygon(double lat, double lon,Color col){
+        List<Coordinate> coords = new ArrayList<>();
+        int dalpha = 360 / NB_POINTS;
+        for(int i=0; i<NB_POINTS;i++){
+            int alpha = i*dalpha;
+            double dx = R_GLOBAL * Math.cos(alpha);
+            double dy = R_GLOBAL * Math.sin(alpha);
+            Coordinate c = new Coordinate(lat+dx,lon+dy);
+            coords.add(c);
+        }
+        Stroke s = new BasicStroke(0);
+        
+        MapPolygon poly = new MapPolygonImpl(coords);
+        return poly;
+    }
+    
+    private Color chooseColor(int value, int type, int opacity){
         int r=0,g=0,b=0;
         switch(type) {
             case TYPE_GREY: r=g=b=128;
@@ -492,14 +582,9 @@ public class Data {
                             break;
         }
         
-        Color col = new Color(r,g,b);
-    	MapMarkerDot point = new MapMarkerDot(col,lat,lon);
-        point.setBackColor(col);
-        
-        
-        map.addMapMarker(point);
-        map.setMapMarkerVisible(true);
-        }
+        Color pointColor = new Color(r,g,b,opacity);
+        return pointColor;
+    } 
     
     /**
      * Removes all the MapMarkers on the map.
