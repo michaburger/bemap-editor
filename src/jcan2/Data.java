@@ -50,6 +50,7 @@ public class Data {
     private int trackID;
     private String layerName;
     private static final int GLOBAL = 0;
+    private Modeling model = new Modeling();
     
     private static final int NB_POINTS = 18; //for polygon, 360/n must be an int
     private static final double GLOBAL_R = 0.0003;
@@ -486,6 +487,7 @@ public class Data {
     public void drawPoint(double lat, double lon, int value, int type, int style){
         JMapViewer map = BeMapEditor.mainWindow.getMap();
         
+        if (value == -1) type = TYPE_GREY;
         
         if(style == BeMapEditor.settings.NORMAL){
             Color col = chooseColor(value,type,255);
@@ -703,6 +705,13 @@ public class Data {
             if(!oldest.isDefined() || p.dateTime < oldest.dateTime) oldest = p;
         }
         return oldest.dateTime;
+    }
+    
+    public void createModel() throws Exception{
+        if(model.isRendered()) BeMapEditor.mainWindow.append("\nModel already existing");
+        else{
+            model.render(pointList);
+        }
     }
    
 }
