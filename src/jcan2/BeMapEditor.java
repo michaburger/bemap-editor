@@ -11,7 +11,6 @@ package jcan2;
  */
 public class BeMapEditor {
 
-    public static int MAPMARKER_R = 5;
     public static MainWindow mainWindow;
     public static realTimeWindow realTimeWindow;
     public static trackInfoPanel trackInfoPanel;

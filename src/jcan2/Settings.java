@@ -14,9 +14,17 @@ public class Settings extends javax.swing.JFrame {
     /**
      * Creates new form Settings
      */
+    
+    public static final int NORMAL = 0;
+    public static final int CLOUD = 1;
+    
     public Settings() {
         initComponents();
         update();
+        
+        transparencySlider.setMinimum(1);
+        transparencySlider.setMaximum(255);
+        transparencySlider.setValue(50);
         try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
@@ -42,8 +50,20 @@ public class Settings extends javax.swing.JFrame {
         idField.setText(usr);
     }
     
+    public int getTransparency(){
+        return transparencySlider.getValue();
+    }
+    
+    
+    
     public String getExportName(){
         return dataExportFilename.getText();
+    }
+    
+    public int getGlobalStyle(){
+        if(normalPoints.isSelected()) return NORMAL;
+        else if(colorClouds.isSelected()) return CLOUD;
+        else return NORMAL;
     }
 
     /**
@@ -55,14 +75,23 @@ public class Settings extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        buttonGroup1 = new javax.swing.ButtonGroup();
+        buttonGroup2 = new javax.swing.ButtonGroup();
+        buttonGroup3 = new javax.swing.ButtonGroup();
+        buttonGroup4 = new javax.swing.ButtonGroup();
+        buttonGroup5 = new javax.swing.ButtonGroup();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         idField = new javax.swing.JTextField();
         dataExportFilename = new javax.swing.JTextField();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        normalPoints = new javax.swing.JRadioButton();
+        colorClouds = new javax.swing.JRadioButton();
+        transparencySlider = new javax.swing.JSlider();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
         jLabel1.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
         jLabel1.setText("BeMapEditor Settings");
@@ -82,6 +111,31 @@ public class Settings extends javax.swing.JFrame {
 
         jLabel4.setText(".bemap");
 
+        jLabel5.setText("Style for global data:");
+
+        buttonGroup1.add(normalPoints);
+        normalPoints.setSelected(true);
+        normalPoints.setText("normal points");
+        normalPoints.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                normalPointsMouseClicked(evt);
+            }
+        });
+
+        buttonGroup1.add(colorClouds);
+        colorClouds.setText("color clouds");
+        colorClouds.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                colorCloudsMouseClicked(evt);
+            }
+        });
+
+        transparencySlider.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                transparencySliderMouseReleased(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -90,18 +144,28 @@ public class Settings extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 125, Short.MAX_VALUE)
-                        .addComponent(jLabel2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(idField, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel3)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(dataExportFilename, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel4)
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addComponent(jLabel4))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel5)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(normalPoints)
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(colorClouds)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(transparencySlider, javax.swing.GroupLayout.PREFERRED_SIZE, 128, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jLabel2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(idField, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -117,7 +181,15 @@ public class Settings extends javax.swing.JFrame {
                     .addComponent(dataExportFilename, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel3)
                     .addComponent(jLabel4))
-                .addContainerGap(232, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel5)
+                    .addComponent(normalPoints, javax.swing.GroupLayout.PREFERRED_SIZE, 17, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(transparencySlider, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addComponent(colorClouds, javax.swing.GroupLayout.PREFERRED_SIZE, 17, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(180, Short.MAX_VALUE))
         );
 
         pack();
@@ -127,15 +199,38 @@ public class Settings extends javax.swing.JFrame {
         update();
     }//GEN-LAST:event_idFieldMouseEntered
 
+    private void normalPointsMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_normalPointsMouseClicked
+       BeMapEditor.mainWindow.updateMap();
+    }//GEN-LAST:event_normalPointsMouseClicked
+
+    private void colorCloudsMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_colorCloudsMouseClicked
+        BeMapEditor.mainWindow.updateMap();
+    }//GEN-LAST:event_colorCloudsMouseClicked
+
+    private void transparencySliderMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_transparencySliderMouseReleased
+        BeMapEditor.mainWindow.updateMap();
+    }//GEN-LAST:event_transparencySliderMouseReleased
+
    
     
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.ButtonGroup buttonGroup1;
+    private javax.swing.ButtonGroup buttonGroup2;
+    private javax.swing.ButtonGroup buttonGroup3;
+    private javax.swing.ButtonGroup buttonGroup4;
+    private javax.swing.ButtonGroup buttonGroup5;
+    private javax.swing.JRadioButton colorClouds;
     private javax.swing.JTextField dataExportFilename;
     private javax.swing.JTextField idField;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JRadioButton normalPoints;
+    private javax.swing.JSlider transparencySlider;
     // End of variables declaration//GEN-END:variables
 }
+
+

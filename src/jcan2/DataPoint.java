@@ -16,19 +16,19 @@ import org.openstreetmap.gui.jmapviewer.Coordinate;
  */
 public class DataPoint {
 
-    int id;
-    double lat;
-    double lon;
-    long date; //ddMMyy
-    long time; //hhmmsscc
+    private int id;
+    private double lat;
+    private double lon;
+    private long date; //ddMMyy
+    private long time; //hhmmsscc
     long dateTime; //special value only used for the time slider
-    int s1; //sensor values
-    int s2;
-    int s3;
-    int s4;
-    int s5;
-    boolean set = false; //defines if a point has been defined
-    boolean onServer = false; //defines if the point has already been sent to the server
+    private int s1; //sensor values
+    private int s2;
+    private int s3;
+    private int s4;
+    private int s5;
+    private boolean set = false; //defines if a point has been defined
+    private boolean onServer = false; //defines if the point has already been sent to the server
     
     public void DataPoint(){
     
@@ -102,6 +102,10 @@ public class DataPoint {
         
         dateTime = getDateTime(date,time);
         set = true;
+    }
+    
+    public boolean isOnServer(){
+        return onServer;
     }
     
     public void removeServerFlag(){

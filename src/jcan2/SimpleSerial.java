@@ -30,7 +30,7 @@ import org.json.JSONObject;
  */
 public class SimpleSerial {
     private String serialPortName = "Error - no Port found";
-    private static final boolean SERIAL_DEBUG = false;
+    private static final boolean SERIAL_DEBUG = true;
     private static final int MAX_DATA_PER_IMPORT = 15;
     private static final int WAIT_MS = 50; //time to wait for the device to respond
     private static final int WAIT_MS_POINTS = WAIT_MS + 10*MAX_DATA_PER_IMPORT; //time to wait for the device to respond
@@ -216,9 +216,6 @@ public int importDataFromDevice(JProgressBar progressBar, JTextArea status) thro
                     status.append("\nError: Number of Points");
                     return -1;
                 }
-
-                serialPort.writeBytes("$ORRST*11\n".getBytes()); //reset the EEPROM address of the device to the beginning
-                Thread.sleep(WAIT_MS);
                 
                 //prepare track to import
                 BeMapEditor.trackOrganiser.createNewTrack("Import");
@@ -233,11 +230,13 @@ public int importDataFromDevice(JProgressBar progressBar, JTextArea status) thro
                 
                 for(int i=0; i< (nbRequests-1); i++){
                     //import serie of points
-                    if(importSerieOfPoints(serialPort,MAX_DATA_PER_IMPORT)<0) return 0;
+                    int offset = i*MAX_DATA_PER_IMPORT;
+                    if(importSerieOfPoints(serialPort,MAX_DATA_PER_IMPORT,offset)<0) return 0;
                     //actualize progress bar
                     progressBar.setValue(i+1);
                 }
-                if(importSerieOfPoints(serialPort,rest)<0) return 0; //import the rest of the points
+                int final_offset = (nbRequests-1)*MAX_DATA_PER_IMPORT;
+                if(importSerieOfPoints(serialPort,rest,final_offset)<0) return 0; //import the rest of the points
                 progressBar.setValue(nbRequests);
                 
                 status.append("\n"+totalNumber+" Points successfully imported");
@@ -324,9 +323,9 @@ private void decodeMemoryState(String memoryState){
         }
 }
 
-private int importSerieOfPoints(SerialPort serialPort, int nb) throws InterruptedException {
+private int importSerieOfPoints(SerialPort serialPort, int nb,int offset) throws InterruptedException {
         try {
-            String send = "$ORGET,"+nb+"*11\n";
+            String send = "$ORGET,"+offset+","+nb+"*11\n";
             if(SERIAL_DEBUG) BeMapEditor.mainWindow.append("\nSent request: "+send);
             serialPort.writeBytes(send.getBytes());
             Thread.sleep(WAIT_MS_POINTS);

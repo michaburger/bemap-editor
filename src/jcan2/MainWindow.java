@@ -92,6 +92,9 @@ public class MainWindow extends javax.swing.JFrame {
      * @param currentTrack Data layer (also called track sometimes)
      */
     
+    public int getBarVal(){return memoryBar.getValue();}
+    public int getBarMax(){return memoryBar.getMaximum();}
+    
     /**
      * Getter for the user id
      * @return user id
@@ -491,8 +494,8 @@ public class MainWindow extends javax.swing.JFrame {
        }
        else{ 
         String path = fileChooserGetPath();
-        if(!fileExists(path + filenameField.getText()+DEFAULT_EXTENSION)){
-            exportToFile(path + filenameField.getText()+DEFAULT_EXTENSION);
+        if(!fileExists(path + BeMapEditor.settings.getExportName()+DEFAULT_EXTENSION)){
+            exportToFile(path + BeMapEditor.settings.getExportName()+DEFAULT_EXTENSION);
         }
         else append(ERROR_MSG_FILE_EXISTS);
        }
@@ -557,6 +560,7 @@ public class MainWindow extends javax.swing.JFrame {
             int response = http.sendJSONFileToBeMapServer("export.json");
             if(response == 200){
                 BeMapEditor.trackOrganiser.deleteOnServerFlag();
+                System.out.println("Server flags deleted");
             }
         } catch (Exception ex) {
             Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
@@ -567,32 +571,18 @@ public class MainWindow extends javax.swing.JFrame {
      * Gets the JSON file about the corresponding road segment (last point clicked) 
      * from the google servers and show it in the status area.
      */
-    private void googleRoadSegmentRequest(){
+    private void getRoadSegment(){
         double lat = lastClicked.getLat();
         double lon = lastClicked.getLon();
         try {
-            JSONObject googleData = http.getGoogleRoadSegment(lat,lon);
-            if("OK".equals(googleData.getString("status"))){
-                JSONArray addressComponents = googleData.getJSONArray("results");
-                JSONObject formattedObject = addressComponents.getJSONObject(0);
-                JSONObject geometry = formattedObject.getJSONObject("geometry");
-                JSONObject viewport = geometry.getJSONObject("viewport");
-                JSONObject northeast = viewport.getJSONObject("northeast");
-                JSONObject southwest = viewport.getJSONObject("southwest");
-                double neLat = northeast.getDouble("lat");
-                double neLng = northeast.getDouble("lng");
-                double swLat = southwest.getDouble("lat");
-                double swLng = southwest.getDouble("lng");
-                
-                RoadSegment segment = new RoadSegment(neLat,neLng,swLat,swLng,0.000001);
-                segment.draw();
-                
-            }
-            else append("Google server error\n");
+            OsmAPI api = new OsmAPI();
+            api.getOSMSegments(lat, lon);
         } catch (Exception ex) {
             Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+    
+    
     
     public void updateMap(){
         getTrack().removeMapMarkers();
@@ -633,8 +623,6 @@ public class MainWindow extends javax.swing.JFrame {
         memoryBar = new javax.swing.JProgressBar();
         jLabel9 = new javax.swing.JLabel();
         saveButton = new javax.swing.JButton();
-        filenameField = new javax.swing.JTextField();
-        jLabel10 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         sensorSlider = new javax.swing.JSlider();
         timeSlider = new javax.swing.JSlider();
@@ -684,6 +672,7 @@ public class MainWindow extends javax.swing.JFrame {
         selectPointsMenu = new javax.swing.JCheckBoxMenuItem();
         jSeparator10 = new javax.swing.JPopupMenu.Separator();
         roadSegmentBar = new javax.swing.JMenuItem();
+        renderMenu = new javax.swing.JMenuItem();
         showPointsBar = new javax.swing.JMenuItem();
 
         jMenu1.setText("jMenu1");
@@ -754,10 +743,6 @@ public class MainWindow extends javax.swing.JFrame {
                 saveButtonActionPerformed(evt);
             }
         });
-
-        filenameField.setText("data");
-
-        jLabel10.setText("filename for exports:");
 
         jLabel2.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
         jLabel2.setText("memory state:");
@@ -998,6 +983,14 @@ public class MainWindow extends javax.swing.JFrame {
         });
         mapMenu.add(roadSegmentBar);
 
+        renderMenu.setText("Render Model");
+        renderMenu.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                renderMenuActionPerformed(evt);
+            }
+        });
+        mapMenu.add(renderMenu);
+
         showPointsBar.setText("Show Points (Debug)");
         showPointsBar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1030,10 +1023,8 @@ public class MainWindow extends javax.swing.JFrame {
                         .addComponent(saveButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel9)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel10)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(filenameField, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(138, 138, 138)
+                        .addComponent(jLabel6)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(sensorSlider, javax.swing.GroupLayout.PREFERRED_SIZE, 164, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(17, 17, 17)
@@ -1046,8 +1037,6 @@ public class MainWindow extends javax.swing.JFrame {
                                 .addGap(18, 18, 18)
                                 .addComponent(memoryBar, javax.swing.GroupLayout.PREFERRED_SIZE, 273, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(jLabel6)
-                                .addGap(69, 69, 69)
                                 .addComponent(jLabel11)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(timeField, javax.swing.GroupLayout.PREFERRED_SIZE, 189, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1077,19 +1066,17 @@ public class MainWindow extends javax.swing.JFrame {
                         .addGap(24, 24, 24)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(timeField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel11, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel6)))
+                            .addComponent(jLabel11, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(saveButton)
                             .addComponent(jLabel9)
-                            .addComponent(jLabel10)
-                            .addComponent(filenameField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jLabel6))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel2)
                             .addComponent(memoryBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(7, 7, 7)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -1114,7 +1101,7 @@ public class MainWindow extends javax.swing.JFrame {
          //if the drawPoints checkbox is selected
          if (drawPointsMenu.getState()){
              //store and draw the point
-             getTrack().drawPoint(c.getLat(),c.getLon(),TYPE_GREY,TYPE_GREY);
+             getTrack().drawPoint(c.getLat(),c.getLon(),TYPE_GREY,TYPE_GREY,BeMapEditor.settings.NORMAL);
              getTrack().storePoint(c.getLat(),c.getLon(),TYPE_GREY);
          }
          if (showInfoMenu.getState()){
@@ -1208,7 +1195,7 @@ public class MainWindow extends javax.swing.JFrame {
     }//GEN-LAST:event_drawPointsMenuActionPerformed
 
     private void roadSegmentBarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_roadSegmentBarActionPerformed
-        googleRoadSegmentRequest();
+        getRoadSegment();
     }//GEN-LAST:event_roadSegmentBarActionPerformed
 
     private void showPointsBarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showPointsBarActionPerformed
@@ -1316,6 +1303,14 @@ public class MainWindow extends javax.swing.JFrame {
         BeMapEditor.settings.setVisible(true);
     }//GEN-LAST:event_settingsMenuActionPerformed
 
+    private void renderMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_renderMenuActionPerformed
+        try {
+            getTrack().createModel();
+        } catch (Exception ex) {
+            Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_renderMenuActionPerformed
+
     
     
     /**
@@ -1336,12 +1331,10 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JMenuItem enableImportMenu;
     private javax.swing.JMenuItem exportServerBar;
     private javax.swing.JMenu fileMenu;
-    private javax.swing.JTextField filenameField;
     private javax.swing.JMenuItem importServerBar;
     private javax.swing.JCheckBoxMenuItem jCheckBoxMenuItem1;
     private javax.swing.JCheckBoxMenuItem jCheckBoxMenuItem2;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel6;
@@ -1386,6 +1379,7 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JMenuItem openBar;
     private javax.swing.JMenuItem quitBar;
     private javax.swing.JMenuItem realTimeImportMenu;
+    private javax.swing.JMenuItem renderMenu;
     private javax.swing.JMenuItem roadSegmentBar;
     private javax.swing.JMenuItem saveAsBar;
     private javax.swing.JMenuItem saveBar;

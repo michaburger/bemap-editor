@@ -80,7 +80,7 @@ public class TrackOrganiser extends javax.swing.JFrame {
     
     public void replaceGlobalData(JSONArray gpsData) throws JSONException{
         trackList.get(GLOBAL).deleteAllPoints();
-        trackList.get(GLOBAL).importJSONList(gpsData);
+        trackList.get(GLOBAL).importJSONListServer(gpsData);
     }
     
     private String getDisplayName(Data d){
@@ -204,7 +204,7 @@ public class TrackOrganiser extends javax.swing.JFrame {
         JSONObject trackArr = new JSONObject();
 
         Data layer = trackList.get(PUBLIC);
-        trackArr.put(layer.getLayerName(),layer.exportJSONList());
+        trackArr.put(layer.getLayerName(),layer.exportJSONListServer());
         
         JSONObject usrObj = new JSONObject();
         usrObj.put(BeMapEditor.mainWindow.getUsrString(), trackArr);
