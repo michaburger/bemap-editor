@@ -196,7 +196,7 @@ public class ServerCommunication {
                                     connection.getInputStream()));
             String decodedString;
             while ((decodedString = in.readLine()) != null) {
-                System.out.println(decodedString);
+                BeMapEditor.mainWindow.append("\n"+decodedString);
             }
             in.close();
 
