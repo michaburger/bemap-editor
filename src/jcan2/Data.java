@@ -41,7 +41,7 @@ public class Data {
     
     //stores all the data points
     private final ArrayList<DataPoint> pointList = new ArrayList<>();
-    private final boolean DATA_DEBUG = true;
+    private final boolean DATA_DEBUG = false;
     private final byte ERROR_TYPE_TRANSMISSION = 1;
     private final String ERROR_MSG_TRANSMISSION = "Transmission error. Please try again.\n";
     private final byte ERROR_TYPE_NO_VALUES = 2;

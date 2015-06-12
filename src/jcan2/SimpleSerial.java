@@ -31,7 +31,7 @@ import org.json.JSONObject;
 public class SimpleSerial {
     private String serialPortName = "Error - no Port found";
     private static final boolean SERIAL_DEBUG = true;
-    private static final int MAX_DATA_PER_IMPORT = 15;
+    private static final int MAX_DATA_PER_IMPORT = 14;
     private static final int WAIT_MS = 50; //time to wait for the device to respond
     private static final int WAIT_MS_POINTS = WAIT_MS + 10*MAX_DATA_PER_IMPORT; //time to wait for the device to respond
     //Test: 100ms = 15 points
@@ -193,8 +193,9 @@ public int importDataFromDevice(JProgressBar progressBar, JTextArea status) thro
                     BeMapEditor.mainWindow.setUsr(usr);
                     status.append("\nUser ID: "+usr);
                 }
-                else if (usr == 0){
+                else if (usr == -1){
                     //code for getting usr id from server
+                    //$ORUSR,25*11\n
                     status.append("\nError: Getting user ID from server not yet supported!");
                     BeMapEditor.mainWindow.setUsr(3);
                 }

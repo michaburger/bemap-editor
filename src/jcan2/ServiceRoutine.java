@@ -81,13 +81,15 @@ class execute extends TimerTask {
                 }
                 if(errorCounter == MAX_IMPORT_TRYS) importStatus.updateStatus("\nSerial error: No points imported");
                 importStatus.enableButtons();
-                portScanning = false;
+                
                 
             }
+            portScanning = false;
             
         } catch (InterruptedException ex) {
             Logger.getLogger(ServiceRoutine.class.getName()).log(Level.SEVERE, null, ex);
         }
+        portScanning = false;
         }
     }
     
