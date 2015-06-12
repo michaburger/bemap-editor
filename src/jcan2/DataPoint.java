@@ -2,6 +2,7 @@
 
 package jcan2;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -29,6 +30,14 @@ public class DataPoint {
     private int s5;
     private boolean set = false; //defines if a point has been defined
     private boolean onServer = false; //defines if the point has already been sent to the server
+    
+    static final int TYPE_POLL1 = 1; //type definition for the drawn color ranges
+    static final int TYPE_POLL2 = 2;
+    static final int TYPE_HUM = 3;
+    static final int TYPE_TEMP = 4;
+    static final int TYPE_ACC = 5;
+    static final int TYPE_GREY = -1; //pollution placeholder for drawing a grey point
+    static final int TEMPERATURE_OFFSET = -5;
     
     public void DataPoint(){
     
@@ -211,6 +220,92 @@ public class DataPoint {
         }
         return 0;
     }
+    
+    public static Color chooseColor(int value, int type, int opacity){
+        int r=0,g=0,b=0;
+        switch(type) {
+            case TYPE_GREY: r=g=b=128;
+                            break;
+            case TYPE_HUM:  g = 127;
+                            if(value<=50){
+                             r = 255;
+                             b = 5*value+5;
+                            }
+                            else{
+                             r = 255-(5*(value-49));
+                             b = 255;
+                            }
+                            if(value < 0 || value > 100) r=g=b=128;
+                            break;
+                            
+            case TYPE_TEMP:   value += TEMPERATURE_OFFSET;
+                              if (value < -10) value = -10;
+                              if (value > 50) value = 50;
+                              if (value < 20){
+                                  r = (int)(85 + 8.5*value);
+                                  g = (int)(133.33333 + 3.33333 * value);
+                              }
+                              else{
+                                  r = 255;
+                                  g = (int)(266.6667 - 3.33333 * value);
+                              }
+                              b = (int)(212.5 - 4.25 * value);
+                              break;
+            case TYPE_POLL1:  if (value < 150) value = 150; //rescale
+                              if (value > 200) value = 200;
+                              value = (int) ((int) (value - 150)*5.1);
+                              
+                             
+                              if (value<=127){
+                                 g = 200;
+                                 r = 2*value*4/5;
+                              }
+                              else{
+                                 g = (512 - 2*value -2)*4/5;
+                                 r = 200;
+                              }
+                              if(value<0||value>255) r=g=b=128; //no value
+                              break;
+        
+            case TYPE_POLL2:  if (value < 130) value = 130; //rescale
+                              if (value > 180) value = 180;
+                              value = (int) ((int) (value - 130)*5.1);
+                             
+                              if (value<=127){
+                                 g = 200;
+                                 r = 2*value*4/5;
+                              }
+                              else{
+                                 g = (512 - 2*value -2)*4/5;
+                                 r = 200;
+                              }
+                              if(value<0||value>255) r=g=b=128; //no value
+                              break;
+            case TYPE_ACC:  if (value < 0) {
+                                r=g=b=128;
+                                break;
+                            }
+                            if (value > 4) value = 4;
+                            r=255;
+                            switch (value) {
+                                case 0: g=b=200;
+                                        break;
+                                case 1: g=b=150;
+                                        break;
+                                case 2: g=b=100;
+                                        break;
+                                case 3: g=b=50;
+                                        break;
+                                case 4: g=b=0;
+                                        break;
+                            }
+                            
+                            break;
+        }
+        
+        Color pointColor = new Color(r,g,b,opacity);
+        return pointColor;
+    } 
 
 
 }

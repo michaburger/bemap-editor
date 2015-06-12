@@ -35,24 +35,51 @@ public class Modeling {
             //status
             BeMapEditor.mainWindow.setBarMax(pointList.size());
             
+            Segment lastSegment = new Segment();
+            OsmNode lastNode = new OsmNode();
+            
+            boolean firstSegmentCreated = false;
+            
             int position = 0;
             for (DataPoint dp : pointList) {
-                
-                Segment lastSegment = new Segment();
                 
                 ArrayList<OsmNode> nodes = api.getOSMSegments(dp.lat(),dp.lon());
                 
                 if(nodes.size()>=2){
                 //find two nearest points, create segment if it doesn't exist yet
                 //todo: check if segment exists
-                ArrayList<OsmNode> segmentNodes = getStartEndNodes(new Coordinate(dp.lat(),dp.lon()),nodes);
-                if(segmentNodes.get(0).isInit() && segmentNodes.get(1).isInit()){
-                    Segment seg = new Segment(segmentNodes.get(0),segmentNodes.get(1),dp);
-                    if(MODEL_DEBUG) BeMapEditor.mainWindow.append("\nNew Segment created");
-                    segments.add(seg);
-                    lastSegment = seg;
+                OsmNode nearest = findNearest(new Coordinate(dp.lat(),dp.lon()),nodes);
+                if(nearest.isInit()){
+                    if(!firstSegmentCreated){
+                        //create first segment
+                        lastNode = nearest;
+                        lastSegment = new Segment(nearest,dp);
+                        firstSegmentCreated = true;
+                        if(MODEL_DEBUG) BeMapEditor.mainWindow.append("\nFirst Segment created");
+                    }
+                    else{
+                    //check if next point is different
+                        if(OsmNode.equals(nearest,lastNode)){
+                             //no --> add to existing segment
+                            lastSegment.addDataPoint(dp);
+                            if(MODEL_DEBUG) BeMapEditor.mainWindow.append("\nPoint added to existing Segment");
+                        }
+                        else{
+                            //yes --> end segment, start new one
+                            lastSegment.segmentEnd(nearest, dp);
+                            lastSegment = new Segment(nearest,dp);
+                            lastNode = nearest;
+                            if(MODEL_DEBUG) BeMapEditor.mainWindow.append("\nNew Segment created");
+                            
+                        }
+                    
+                   
+                    }
                 }
-                else if(MODEL_DEBUG) BeMapEditor.mainWindow.append("\nSegment ignored");
+                else {
+                    if(MODEL_DEBUG) BeMapEditor.mainWindow.append("\nSegment ignored");
+                }
+                
                 }
                 else{
                    //else ignore points or put them in front of Federal Palace
@@ -60,10 +87,15 @@ public class Modeling {
                    if(MODEL_DEBUG) BeMapEditor.mainWindow.append("\nPoint added to existing Segment");
                 }
                 //adapt status bar
+                Thread.sleep(1);
                 BeMapEditor.mainWindow.setBar(position);
                 position++;
             }
             
+            //close last segment
+            lastSegment.segmentEnd(lastNode,pointList.get(pointList.size()-1));
+            
+            BeMapEditor.mainWindow.getMap().removeAllMapMarkers();
             
             //restitue memory bar
             BeMapEditor.mainWindow.setBar(barVal);
@@ -81,22 +113,18 @@ public class Modeling {
      * @param allNodes
      * @return 
      */
-    private ArrayList<OsmNode> getStartEndNodes(Coordinate c, ArrayList<OsmNode> allNodes){
-        OsmNode near1 = new OsmNode();
-        OsmNode near2 = new OsmNode();
+    private OsmNode findNearest(Coordinate c, ArrayList<OsmNode> allNodes){
+        OsmNode near = new OsmNode();
         
         for (OsmNode n : allNodes) {
-            if(calculateDistance(n.getCoord(),c) < calculateDistance(near1.getCoord(),c)){
-                //replace the nearest nodes
-                near2=near1;
-                near1=n;
+            if(calculateDistance(n.getCoord(),c) < calculateDistance(near.getCoord(),c)){
+                //replace the nearest node
+                near=n;
             }
         }
         ArrayList<OsmNode> finalList = new ArrayList<>();
-        finalList.add(near1);
-        finalList.add(near2);
         
-        return finalList;
+        return near;
         
     }
     

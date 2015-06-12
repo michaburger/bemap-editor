@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jfree.data.xy.XYSeries;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -45,7 +47,7 @@ public class Data {
     private final byte ERROR_TYPE_NO_VALUES = 2;
     private final byte NO_ERROR = 0;
     private final double MAX_DEGRE = 0.005; //max distance for showing points
-    private static final double PRECISION = 0.0000000001; //precision for double comparison
+    private static final double PRECISION = 0.000000001; //precision for double comparison
     private final String ERROR_MSG_NO_VALUES = "No values stored in the device. Could not be imported\n";
     private int trackID;
     private String layerName;
@@ -54,15 +56,7 @@ public class Data {
     
     private static final int NB_POINTS = 18; //for polygon, 360/n must be an int
     private static final double GLOBAL_R = 0.0003;
-           
-    
-    private final int TYPE_POLL1 = 1; //type definition for the drawn color ranges
-    private final int TYPE_POLL2 = 2;
-    private final int TYPE_HUM = 3;
-    private final int TYPE_TEMP = 4;
-    private final int TYPE_ACC = 5;
-    private final int TYPE_GREY = -1; //pollution placeholder for drawing a grey point
-    private final int TEMPERATURE_OFFSET = -5;
+          
     
     //String "buffer" for data input:
     private String outputDataString = "";
@@ -487,10 +481,10 @@ public class Data {
     public void drawPoint(double lat, double lon, int value, int type, int style){
         JMapViewer map = BeMapEditor.mainWindow.getMap();
         
-        if (value == -1) type = TYPE_GREY;
+        if (value == -1) type = DataPoint.TYPE_GREY;
         
         if(style == BeMapEditor.settings.NORMAL){
-            Color col = chooseColor(value,type,255);
+            Color col = DataPoint.chooseColor(value,type,255);
             MapMarkerDot point = new MapMarkerDot(col,lat,lon);
             point.setBackColor(col);
         
@@ -498,7 +492,7 @@ public class Data {
             map.setMapMarkerVisible(true);
         }
         else if(style == BeMapEditor.settings.CLOUD){
-            Color col = chooseColor(value,type,BeMapEditor.settings.getTransparency());
+            Color col = DataPoint.chooseColor(value,type,BeMapEditor.settings.getTransparency());
             MapPolygon poly = getPolygon(lat,lon,col);
         
             map.addMapPolygon(poly);
@@ -529,91 +523,7 @@ public class Data {
         
     }
     
-    private Color chooseColor(int value, int type, int opacity){
-        int r=0,g=0,b=0;
-        switch(type) {
-            case TYPE_GREY: r=g=b=128;
-                            break;
-            case TYPE_HUM:  g = 127;
-                            if(value<=50){
-                             r = 255;
-                             b = 5*value+5;
-                            }
-                            else{
-                             r = 255-(5*(value-49));
-                             b = 255;
-                            }
-                            if(value < 0 || value > 100) r=g=b=128;
-                            break;
-                            
-            case TYPE_TEMP:   value += TEMPERATURE_OFFSET;
-                              if (value < -10) value = -10;
-                              if (value > 50) value = 50;
-                              if (value < 20){
-                                  r = (int)(85 + 8.5*value);
-                                  g = (int)(133.33333 + 3.33333 * value);
-                              }
-                              else{
-                                  r = 255;
-                                  g = (int)(266.6667 - 3.33333 * value);
-                              }
-                              b = (int)(212.5 - 4.25 * value);
-                              break;
-            case TYPE_POLL1:  if (value < 150) value = 150; //rescale
-                              if (value > 200) value = 200;
-                              value = (int) ((int) (value - 150)*5.1);
-                              
-                             
-                              if (value<=127){
-                                 g = 200;
-                                 r = 2*value*4/5;
-                              }
-                              else{
-                                 g = (512 - 2*value -2)*4/5;
-                                 r = 200;
-                              }
-                              if(value<0||value>255) r=g=b=128; //no value
-                              break;
-        
-            case TYPE_POLL2:  if (value < 130) value = 130; //rescale
-                              if (value > 180) value = 180;
-                              value = (int) ((int) (value - 130)*5.1);
-                             
-                              if (value<=127){
-                                 g = 200;
-                                 r = 2*value*4/5;
-                              }
-                              else{
-                                 g = (512 - 2*value -2)*4/5;
-                                 r = 200;
-                              }
-                              if(value<0||value>255) r=g=b=128; //no value
-                              break;
-            case TYPE_ACC:  if (value < 0) {
-                                r=g=b=128;
-                                break;
-                            }
-                            if (value > 4) value = 4;
-                            r=255;
-                            switch (value) {
-                                case 0: g=b=200;
-                                        break;
-                                case 1: g=b=150;
-                                        break;
-                                case 2: g=b=100;
-                                        break;
-                                case 3: g=b=50;
-                                        break;
-                                case 4: g=b=0;
-                                        break;
-                            }
-                            
-                            break;
-        }
-        
-        Color pointColor = new Color(r,g,b,opacity);
-        return pointColor;
-    } 
+    
     
     /**
      * Removes all the MapMarkers on the map.
@@ -707,10 +617,14 @@ public class Data {
         return oldest.dateTime;
     }
     
-    public void createModel() throws Exception{
+    public void createModel() {
         if(model.isRendered()) BeMapEditor.mainWindow.append("\nModel already existing");
         else{
-            model.render(pointList);
+            try {
+                model.render(pointList);
+            } catch (Exception ex) {
+                Logger.getLogger(Data.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }
    

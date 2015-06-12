@@ -35,27 +35,22 @@ public class Segment {
     private static final int LAT = 0; //N
     private static final int LON = 1; //E
     
+    private final int OPACITY = 150;
+    
+    private boolean isComplete = false;
+    
     public Segment(){
         //no initialisations: federal palace
     }
     
-    public Segment(OsmNode node1, OsmNode node2, DataPoint dp){
+    public boolean isComplete(){return isComplete;}
+    
+    
+    
+    public Segment(OsmNode node1, DataPoint dp){
         this.node1 = node1;
-        this.node2 = node2;
         dpList.add(dp);
         
-        roadVector[LAT] = node1.getLat() - node2.getLat();
-        roadVector[LON] = node1.getLon() - node2.getLon();
-        
-        perpVector = createPerpNormed(roadVector);
-        
-        //add the 4 corners to the list
-        corners.add(new Coordinate(node1.getLat()+size*perpVector[LAT],node1.getLon()+size*perpVector[LON]));
-        corners.add(new Coordinate(node2.getLat()+size*perpVector[LAT],node2.getLon()+size*perpVector[LON]));
-        corners.add(new Coordinate(node2.getLat()-size*perpVector[LAT],node2.getLon()-size*perpVector[LON]));
-        corners.add(new Coordinate(node1.getLat()-size*perpVector[LAT],node1.getLon()-size*perpVector[LON]));
-        
-        draw();
         
         //draw points for debug
         /*
@@ -68,10 +63,29 @@ public class Segment {
         */
     }
     
+    public void segmentEnd(OsmNode node2, DataPoint dp){
+        this.node2 = node2;
+        dpList.add(dp);
+                
+        roadVector[LAT] = node1.getLat() - node2.getLat();
+        roadVector[LON] = node1.getLon() - node2.getLon();
+        
+        perpVector = createPerpNormed(roadVector);
+        
+        //add the 4 corners to the list
+        corners.add(new Coordinate(node1.getLat()+size*perpVector[LAT],node1.getLon()+size*perpVector[LON]));
+        corners.add(new Coordinate(node2.getLat()+size*perpVector[LAT],node2.getLon()+size*perpVector[LON]));
+        corners.add(new Coordinate(node2.getLat()-size*perpVector[LAT],node2.getLon()-size*perpVector[LON]));
+        corners.add(new Coordinate(node1.getLat()-size*perpVector[LAT],node1.getLon()-size*perpVector[LON]));
+        
+        isComplete = true;
+        
+        draw();
+    }
     public void draw() {
         JMapViewer map = BeMapEditor.mainWindow.getMap();
         
-        Color col = new Color(255,0,0,127);
+        Color col = getColor();
         
         Layer global = new Layer("Global");
         Style style = new Style();
@@ -81,6 +95,19 @@ public class Segment {
         MapPolygon poly = new MapPolygonImpl(global,"",corners,style);
         map.addMapPolygon(poly);
         
+    }
+    
+    private Color getColor(){
+        int rSum=0,gSum=0,bSum=0,aSum=0;
+        for(DataPoint dp : dpList){
+            Color c = DataPoint.chooseColor(dp.getSensor(BeMapEditor.mainWindow.getSensorNumber()), BeMapEditor.mainWindow.getSensorNumber(), OPACITY);
+            rSum += c.getRed();
+            gSum += c.getGreen();
+            bSum += c.getBlue();
+            aSum += c.getAlpha();
+        }
+        int d=dpList.size();
+        return new Color(rSum/d,gSum/d,bSum/d,aSum/d);
     }
     
     public void addDataPoint(DataPoint dp){
@@ -103,4 +130,23 @@ public class Segment {
     private double length(double [] vector){
         return sqrt(vector[LAT]*vector[LAT] + vector[LON]*vector[LON]);
     }
+    
+    /**
+     * Returns true if the point is already stored in this Data object
+     * @param lat latitude
+     * @param lon longitude
+     * @return true when point exists, false when point doesn't exist
+     */
+    private boolean exists(OsmNode n1, OsmNode n2){
+        boolean exists = false;
+        
+        //if n1 == node1 AND n2 == node 2
+        //or if n1 == node2 AND n2 == node 1
+        if((OsmNode.equals(n1,node1) && OsmNode.equals(n2,node2))||(OsmNode.equals(n1,node2)&&OsmNode.equals(n2,node1))){
+            exists = true;
+        }
+        return exists;
+    }
+    
+    
 }
