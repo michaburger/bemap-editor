@@ -1278,7 +1278,7 @@ public class MainWindow extends javax.swing.JFrame {
     }//GEN-LAST:event_settingsMenuActionPerformed
 
     private void renderMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_renderMenuActionPerformed
-            
+        append("\nCreating model. This might take some minutes!");
         try {
             Thread.sleep(10);
         } catch (InterruptedException ex) {

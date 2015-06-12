@@ -30,7 +30,7 @@ public class Segment {
     private double roadVector[] = new double[2];
     private double perpVector[] = new double[2]; //perpendicular normed vector [lat, lon]
     private List<Coordinate> corners = new ArrayList<>(); //the 4 corner points
-    private final static double size = 0.0002;
+    private final static double size = 0.00015;
 
     private static final int LAT = 0; //N
     private static final int LON = 1; //E
@@ -62,6 +62,8 @@ public class Segment {
         m2.setVisible(true);
         */
     }
+    
+    public int getPointNumber(){return dpList.size();}
     
     public void segmentEnd(OsmNode node2, DataPoint dp){
         this.node2 = node2;

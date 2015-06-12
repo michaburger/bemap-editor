@@ -3,9 +3,6 @@
 package jcan2;
 
 import java.awt.Color;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.openstreetmap.gui.jmapviewer.Coordinate;
@@ -223,6 +220,7 @@ public class DataPoint {
     
     public static Color chooseColor(int value, int type, int opacity){
         int r=0,g=0,b=0;
+        value = (value /4)-1;
         switch(type) {
             case TYPE_GREY: r=g=b=128;
                             break;
