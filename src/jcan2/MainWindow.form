@@ -342,17 +342,9 @@
             </MenuItem>
             <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator10">
             </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="roadSegmentBar">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Get Road Segment"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="roadSegmentBarActionPerformed"/>
-              </Events>
-            </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="renderMenu">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Render Model"/>
+                <Property name="text" type="java.lang.String" value="Create Street Model (takes some time)"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="renderMenuActionPerformed"/>

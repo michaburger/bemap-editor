@@ -567,20 +567,7 @@ public class MainWindow extends javax.swing.JFrame {
         }
     }
     
-    /**
-     * Gets the JSON file about the corresponding road segment (last point clicked) 
-     * from the google servers and show it in the status area.
-     */
-    private void getRoadSegment(){
-        double lat = lastClicked.getLat();
-        double lon = lastClicked.getLon();
-        try {
-            OsmAPI api = new OsmAPI();
-            api.getOSMSegments(lat, lon);
-        } catch (Exception ex) {
-            Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
+    
     
     
     
@@ -671,7 +658,6 @@ public class MainWindow extends javax.swing.JFrame {
         showInfoMenu = new javax.swing.JCheckBoxMenuItem();
         selectPointsMenu = new javax.swing.JCheckBoxMenuItem();
         jSeparator10 = new javax.swing.JPopupMenu.Separator();
-        roadSegmentBar = new javax.swing.JMenuItem();
         renderMenu = new javax.swing.JMenuItem();
         showPointsBar = new javax.swing.JMenuItem();
 
@@ -975,15 +961,7 @@ public class MainWindow extends javax.swing.JFrame {
         mapMenu.add(selectPointsMenu);
         mapMenu.add(jSeparator10);
 
-        roadSegmentBar.setText("Get Road Segment");
-        roadSegmentBar.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                roadSegmentBarActionPerformed(evt);
-            }
-        });
-        mapMenu.add(roadSegmentBar);
-
-        renderMenu.setText("Render Model");
+        renderMenu.setText("Create Street Model (takes some time)");
         renderMenu.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 renderMenuActionPerformed(evt);
@@ -1194,10 +1172,6 @@ public class MainWindow extends javax.swing.JFrame {
         
     }//GEN-LAST:event_drawPointsMenuActionPerformed
 
-    private void roadSegmentBarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_roadSegmentBarActionPerformed
-        getRoadSegment();
-    }//GEN-LAST:event_roadSegmentBarActionPerformed
-
     private void showPointsBarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showPointsBarActionPerformed
         try {
             append(getTrack().exportJSONList().toString());
@@ -1383,7 +1357,6 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JMenuItem quitBar;
     private javax.swing.JMenuItem realTimeImportMenu;
     private javax.swing.JMenuItem renderMenu;
-    private javax.swing.JMenuItem roadSegmentBar;
     private javax.swing.JMenuItem saveAsBar;
     private javax.swing.JMenuItem saveBar;
     private javax.swing.JButton saveButton;
