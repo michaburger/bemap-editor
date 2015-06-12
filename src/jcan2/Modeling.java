@@ -18,6 +18,7 @@ public class Modeling {
     private OsmAPI api = new OsmAPI();
     private ArrayList<Segment> segments = new ArrayList<>();
     private static final boolean MODEL_DEBUG = true;
+    private static final int MIN_POINTS_SEGMENT = 10;
     
     public Modeling(){
         
@@ -59,7 +60,7 @@ public class Modeling {
                     }
                     else{
                     //check if next point is different
-                        if(OsmNode.equals(nearest,lastNode)){
+                        if(OsmNode.equals(nearest,lastNode) || lastSegment.getPointNumber() < MIN_POINTS_SEGMENT){
                              //no --> add to existing segment
                             lastSegment.addDataPoint(dp);
                             if(MODEL_DEBUG) BeMapEditor.mainWindow.append("\nPoint added to existing Segment");
@@ -67,6 +68,7 @@ public class Modeling {
                         else{
                             //yes --> end segment, start new one
                             lastSegment.segmentEnd(nearest, dp);
+                            segments.add(lastSegment);
                             lastSegment = new Segment(nearest,dp);
                             lastNode = nearest;
                             if(MODEL_DEBUG) BeMapEditor.mainWindow.append("\nNew Segment created");
@@ -93,7 +95,11 @@ public class Modeling {
             }
             
             //close last segment
-            lastSegment.segmentEnd(lastNode,pointList.get(pointList.size()-1));
+            if(lastSegment.getPointNumber()>MIN_POINTS_SEGMENT){
+               lastSegment.segmentEnd(lastNode,pointList.get(pointList.size()-1));
+               segments.add(lastSegment);
+            }
+            else lastSegment = null; //will be deleted by garbage collector
             
             BeMapEditor.mainWindow.getMap().removeAllMapMarkers();
             
