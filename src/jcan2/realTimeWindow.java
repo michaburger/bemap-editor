@@ -38,6 +38,8 @@ public class realTimeWindow extends javax.swing.JFrame {
     XYSeriesCollection dataset = new XYSeriesCollection();
     XYSeriesCollection accDataset = new XYSeriesCollection();
     
+    private final int INTERVAL = 300;
+    
     private final int MAX_VALUES = 100;
     
     // Generate the graph
@@ -112,11 +114,11 @@ public class realTimeWindow extends javax.swing.JFrame {
         accPanel.validate();
         accPanel.setSize(300,300);
         
-        timer.schedule(new GetNewValues(), 0, 100);
+        timer.schedule(new GetNewValues(), 0, INTERVAL);
         
     }
     
-    public void addToGraph(int tempval, int humval, int gazval1, int gazval2, double vax, double vay, double vaz){
+    public void addToGraph(double tempval, double humval, int gazval1, int gazval2, double vax, double vay, double vaz){
         temp.add(graphIndex,tempval);
         hum.add(graphIndex,humval);
         gaz1.add(graphIndex,gazval1);
@@ -138,9 +140,9 @@ public class realTimeWindow extends javax.swing.JFrame {
             JSONObject realTimeValues = BeMapEditor.serviceRoutine.serial.getRealTimeData();
             BeMapEditor.mainWindow.append(realTimeValues.toString());
             if(realTimeValues.getInt("err")==0){
-            addToGraph(realTimeValues.getInt("temp"),realTimeValues.getInt("hum"),
+            addToGraph(realTimeValues.getDouble("temp"),realTimeValues.getDouble("hum"),
                     realTimeValues.getInt("gaz1")-150,realTimeValues.getInt("gaz2")-150,
-                    realTimeValues.getDouble("ax"),realTimeValues.getDouble("ay"),realTimeValues.getDouble("az")+1);
+                    realTimeValues.getDouble("ax"),realTimeValues.getDouble("ay"),realTimeValues.getDouble("az"));
             }
             } catch (InterruptedException ex) {
             Logger.getLogger(realTimeWindow.class.getName()).log(Level.SEVERE, null, ex);

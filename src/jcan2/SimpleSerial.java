@@ -64,30 +64,7 @@ public int searchDevicePort() throws InterruptedException{
                 portNumber = i;
                 i = portNames.length; //quit loop
             }
-            /*
-            SerialPort serialPort = new SerialPort(portNames[i]);
-            if(SERIAL_DEBUG) BeMapEditor.mainWindow.append("\nOpening port "+portNames[i]);
             
-            
-            try {
-            serialPort.openPort();//Open serial port
-            serialPort.setParams(SerialPort.BAUDRATE_4800,
-            SerialPort.DATABITS_8,
-            SerialPort.STOPBITS_1,
-            SerialPort.PARITY_NONE);//Set params. Also you can set params by this string: serialPort.setParams(9600, 8, 1, 0);
-            
-            serialPort.writeBytes("$ORUSR*11\n".getBytes());//Write data to port
-            Thread.sleep(WAIT_MS);
-            byte[] buffer = serialPort.readBytes(1);//Read 1 bytes from serial port
-            if(buffer[0] == 36) portNumber = i; //success on this port when device answers with $
-            else if (SERIAL_DEBUG) BeMapEditor.mainWindow.append("\nError: Port found but device doesn't answer with $");
-            serialPort.closePort();//Close serial port
-            }
-            catch (SerialPortException ex) {
-            //do not print error
-            if(SERIAL_DEBUG) BeMapEditor.mainWindow.append("\nOpening port "+portNames[i]+" failed");
-            }
-            */
         } catch (ExecutionException ex) {
             Logger.getLogger(SimpleSerial.class.getName()).log(Level.SEVERE, null, ex);
         } catch (TimeoutException ex) {
@@ -121,13 +98,13 @@ public JSONObject getRealTimeData() throws InterruptedException, JSONException{
             
             
             serialPort.openPort();//Open serial port
-            serialPort.setParams(SerialPort.BAUDRATE_4800,
+            serialPort.setParams(SerialPort.BAUDRATE_9600,
                     SerialPort.DATABITS_8,
                     SerialPort.STOPBITS_1,
                     SerialPort.PARITY_NONE);//Set params. Also you can set params by this string: serialPort.setParams(9600, 8, 1, 0);
             
             serialPort.writeBytes("$ORRTV*11\n".getBytes());//Write data to port
-            Thread.sleep(WAIT_MS*2);
+            Thread.sleep(WAIT_MS*5);
             String realTime = serialPort.readString();
             serialPort.closePort();
             int temp = 0;
@@ -144,8 +121,8 @@ public JSONObject getRealTimeData() throws InterruptedException, JSONException{
                 
                 if("$BMRTV".equals(seperated[0])){
                     output.put("err",0);
-                    output.put("temp", Integer.parseInt(seperated[8])); //temp data
-                    output.put("hum", Integer.parseInt(seperated[7]));
+                    output.put("temp", Double.parseDouble(seperated[8])); //temp data
+                    output.put("hum", Double.parseDouble(seperated[7]));
                     output.put("gaz1", Integer.parseInt(seperated[5]));
                     output.put("gaz2", Integer.parseInt(seperated[6]));
                     output.put("ax", Double.parseDouble(seperated[9]));
@@ -180,7 +157,7 @@ public int importDataFromDevice(JProgressBar progressBar, JTextArea status) thro
          
             try {
                 serialPort.openPort();//Open serial port
-                serialPort.setParams(SerialPort.BAUDRATE_4800, 
+                serialPort.setParams(SerialPort.BAUDRATE_9600, 
                                     SerialPort.DATABITS_8,
                                     SerialPort.STOPBITS_1,
                                     SerialPort.PARITY_NONE);//Set params. Also you can set params by this string: serialPort.setParams(9600, 8, 1, 0);
@@ -263,7 +240,7 @@ public int sendDeleteRequest(){
             
             try {
                 serialPort.openPort();//Open serial port
-                serialPort.setParams(SerialPort.BAUDRATE_4800, 
+                serialPort.setParams(SerialPort.BAUDRATE_9600, 
                                     SerialPort.DATABITS_8,
                                     SerialPort.STOPBITS_1,
                                     SerialPort.PARITY_NONE);//Set params. Also you can set params by this string: serialPort.setParams(9600, 8, 1, 0);
@@ -284,7 +261,7 @@ public int updateMemoryState() throws InterruptedException{
             
             try {
                 serialPort.openPort();//Open serial port
-                serialPort.setParams(SerialPort.BAUDRATE_4800, 
+                serialPort.setParams(SerialPort.BAUDRATE_9600, 
                                     SerialPort.DATABITS_8,
                                     SerialPort.STOPBITS_1,
                                     SerialPort.PARITY_NONE);//Set params. Also you can set params by this string: serialPort.setParams(9600, 8, 1, 0);
@@ -390,7 +367,7 @@ class PortSearchTask implements Callable<String> {
             
             try {
                 serialPort.openPort();//Open serial port
-                serialPort.setParams(SerialPort.BAUDRATE_4800, 
+                serialPort.setParams(SerialPort.BAUDRATE_9600, 
                                     SerialPort.DATABITS_8,
                                     SerialPort.STOPBITS_1,
                                     SerialPort.PARITY_NONE);//Set params. Also you can set params by this string: serialPort.setParams(9600, 8, 1, 0);

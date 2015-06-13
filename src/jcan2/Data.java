@@ -322,8 +322,8 @@ public class Data {
           //iterate through point list
           for (DataPoint dp : pointList) {
               //for every point dp, do
-              //only draw points in the time spread
-              if(!BeMapEditor.mainWindow.timeSliderActive() || dp.dateTime == timespread){
+              //TODO: only draw points in the time spread
+              if(!BeMapEditor.mainWindow.timeSliderActive()){
               drawPoint(dp.lat(),dp.lon(),dp.getSensor(BeMapEditor.mainWindow.getSensorNumber()),BeMapEditor.mainWindow.getSensorNumber(),style);
               }
               //else if (DATA_DEBUG) BeMapEditor.mainWindow.append("Point ignored due to time slider\n");
@@ -332,28 +332,19 @@ public class Data {
     }
     
     public void addDataToGraph(XYSeries temp,XYSeries hum,XYSeries gaz1,XYSeries gaz2,XYSeries acc){
-        long seconds = 0;
-        int counter = 0;
-        if(pointList.size()>0){
-          //iterate through point list to get mean
-          for (DataPoint dp: pointList){
-              seconds += dp.hour();
-              counter ++;
-          }
-          int mean = (int)(seconds / counter);
-          
+        
+        
           for (DataPoint dp : pointList) {
-              //filter
-              if(dp.hour()< (mean + 1) && dp.hour() > (mean - 1)){
-              temp.add(dp.seconds(),dp.s4());
-              hum.add(dp.seconds(),dp.s3());
-              gaz1.add(dp.seconds(),dp.s1()/5);
-              gaz2.add(dp.seconds(),dp.s2()/5);
-              acc.add(dp.seconds(),dp.s5()*5);
+              {
+              temp.add(dp.getDateObject().getTime(),dp.s4()/100.0);
+              hum.add(dp.getDateObject().getTime(),dp.s3()/100.0);
+              gaz1.add(dp.getDateObject().getTime(),dp.s1());
+              gaz2.add(dp.getDateObject().getTime(),dp.s2());
+              acc.add(dp.getDateObject().getTime(),dp.s5());
               }
               //else if (DATA_DEBUG) BeMapEditor.mainWindow.append("Point ignored due to time slider\n");
           }
-        }
+        
     }
     
     /**
@@ -596,9 +587,9 @@ public class Data {
         
         while(it.hasNext()){
             DataPoint p = it.next();
-            if(!youngest.isDefined() || p.dateTime > youngest.dateTime) youngest = p;
+           // if(!youngest.isDefined() || p.getDateObject() > youngest.getDateObject) youngest = p;
         }
-        return youngest.dateTime;
+        return 0;
     }
     
     /**
@@ -612,9 +603,9 @@ public class Data {
         
         while(it.hasNext()){
             DataPoint p = it.next();
-            if(!oldest.isDefined() || p.dateTime < oldest.dateTime) oldest = p;
+            //if(!oldest.isDefined() || p.dateTime < oldest.dateTime) oldest = p;
         }
-        return oldest.dateTime;
+        return 0;
     }
     
     public void createModel() {

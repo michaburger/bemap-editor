@@ -744,6 +744,7 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
 
+        timeSlider.setEnabled(false);
         timeSlider.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mousePressed(java.awt.event.MouseEvent evt) {
                 timeSliderMousePressed(evt);
@@ -1111,8 +1112,8 @@ public class MainWindow extends javax.swing.JFrame {
                  append(" Time: "+hour+":"+minS+":"+secS+"."+hdrS+"\n");
                  append("CO: "+ pointInfo.getInt("s1"));
                  append(" NO2: "+ pointInfo.getInt("s2"));
-                 append(" Humidity: "+ pointInfo.getInt("s3"));
-                 append(" Temperature: "+ pointInfo.getInt("s4"));
+                 append(" Humidity: "+ pointInfo.getInt("s3")/100.0);
+                 append(" Temperature: "+ pointInfo.getInt("s4")/100.0);
                  append(" Road vibrations: "+ pointInfo.getInt("s5")+"\n");
              }
              } catch (JSONException ex) {

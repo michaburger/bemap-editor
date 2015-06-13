@@ -3,6 +3,8 @@
 package jcan2;
 
 import java.awt.Color;
+import java.util.Calendar;
+import java.util.Date;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.openstreetmap.gui.jmapviewer.Coordinate;
@@ -19,12 +21,11 @@ public class DataPoint {
     private double lon;
     private long date; //ddMMyy
     private long time; //hhmmsscc
-    long dateTime; //special value only used for the time slider
-    private int s1; //sensor values
-    private int s2;
-    private int s3;
-    private int s4;
-    private int s5;
+    private int co; //sensor values
+    private int no2;
+    private int hum;
+    private int temp;
+    private int vib;
     private boolean set = false; //defines if a point has been defined
     private boolean onServer = false; //defines if the point has already been sent to the server
     
@@ -34,7 +35,7 @@ public class DataPoint {
     static final int TYPE_TEMP = 4;
     static final int TYPE_ACC = 5;
     static final int TYPE_GREY = -1; //pollution placeholder for drawing a grey point
-    static final int TEMPERATURE_OFFSET = -5;
+    static final int TEMPERATURE_OFFSET = -7;
     
     public void DataPoint(){
     
@@ -54,11 +55,11 @@ public class DataPoint {
         point.put("lon",lon);
         point.put("date",date);
         point.put("time",time);
-        point.put("s1",s1);
-        point.put("s2",s2);
-        point.put("s3",s3);
-        point.put("s4",s4);
-        point.put("s5", 0); //envoyer 0 en attendant
+        point.put("s1",co);
+        point.put("s2",no2);
+        point.put("s3",hum);
+        point.put("s4",temp);
+        point.put("s5", vib); //envoyer 0 en attendant
         point.put("sent",onServer);
         return point;
     }
@@ -71,11 +72,11 @@ public class DataPoint {
         point.put("lon",lon);
         point.put("date",date);
         point.put("time",time);
-        point.put("s1",s1);
-        point.put("s2",s2);
-        point.put("s3",s3);
-        point.put("s4",s4);
-        point.put("s5", 0); //envoyer 0 en attendant
+        point.put("s1",co);
+        point.put("s2",no2);
+        point.put("s3",hum);
+        point.put("s4",temp);
+        point.put("s5", vib); //envoyer 0 en attendant
         return point;
     }
     
@@ -99,14 +100,13 @@ public class DataPoint {
         this.lon = lon;
         this.date = date;
         this.time = time;
-        this.s1 = s1;
-        this.s2 = s2;
-        this.s3 = s3;
-        this.s4 = s4;
-        this.s5 = s5;
+        this.co = s1;
+        this.no2 = s2;
+        this.hum = s3;
+        this.temp = s4;
+        this.vib = s5;
         onServer = sent;
-        
-        dateTime = getDateTime(date,time);
+
         set = true;
     }
     
@@ -171,13 +171,23 @@ public class DataPoint {
      * @param time time in the format hhmmsscc
      * @return datetime in the format yyMMddhh
      */
-    private long getDateTime(long date, long time){
+    public Date getDateObject(){
         int day = (int) date / 10000;
         int month = (int) date / 100 - day * 100;
         int year = (int) date - day * 10000 - month * 100;
         int hour = (int) time / 1000000;
+        int min = (int) ((time /  10000) - hour * 100);
+        int sec = (int) ((time / 100) - min * 100 - hour * 10000);
+        Date d = new Date();
+        d.setYear(year);
+        d.setMonth(month);
+        d.setDate(day);
+        d.setHours(hour);
+        d.setMinutes(min);
+        d.setSeconds(sec);
+        System.out.println(d);
         
-        return year * 1000000 + month * 10000 + day * 100 + hour;
+        return d;
     }
     
     
@@ -191,11 +201,11 @@ public class DataPoint {
      * @return Time in hhmmsscc
      */
     public long time(){return time;}
-    public int s1(){return s1;}
-    public int s2(){return s2;}
-    public int s3(){return s3;}
-    public int s4(){return s4;}
-    public int s5(){return s5;}
+    public int s1(){return co;}
+    public int s2(){return no2;}
+    public double s3(){return hum;}
+    public double s4(){return temp;}
+    public int s5(){return vib;}
     
     /**
      * Get the value of a specific sensor
@@ -204,15 +214,15 @@ public class DataPoint {
      */
     public int getSensor(int sensorNb){
         switch(sensorNb){
-            case 1: return s1;
+            case 1: return co;
                     
-            case 2: return s2;
+            case 2: return no2;
                     
-            case 3: return s3;
+            case 3: return hum;
                     
-            case 4: return s4;
+            case 4: return temp;
                 
-            case 5: return s5;
+            case 5: return vib;
                     
         }
         return 0;
@@ -224,7 +234,8 @@ public class DataPoint {
         switch(type) {
             case TYPE_GREY: r=g=b=128;
                             break;
-            case TYPE_HUM:  g = 127;
+            case TYPE_HUM:  value = value / 100;
+                            g = 127;
                             if(value<=50){
                              r = 255;
                              b = 5*value+5;
@@ -236,7 +247,8 @@ public class DataPoint {
                             if(value < 0 || value > 100) r=g=b=128;
                             break;
                             
-            case TYPE_TEMP:   value += TEMPERATURE_OFFSET;
+            case TYPE_TEMP:   value = value / 100;
+                              value += TEMPERATURE_OFFSET;
                               if (value < -10) value = -10;
                               if (value > 50) value = 50;
                               if (value < 20){
