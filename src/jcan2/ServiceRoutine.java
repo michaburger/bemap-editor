@@ -9,6 +9,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.json.JSONException;
 
 /**
  *
@@ -24,7 +25,8 @@ public class ServiceRoutine {
     
     public ServiceRoutine(){
         serviceTimer.scheduleAtFixedRate(new execute(), 5000, 5000);
-        serviceTimer.scheduleAtFixedRate(new export(), 2*60*1000, 2*60*1000);
+        //activate the next line for automatic server export
+        //serviceTimer.scheduleAtFixedRate(new export(), 2*60*1000, 2*60*1000);
     }
     
     /**
@@ -64,7 +66,11 @@ class execute extends TimerTask {
                 importStatus.disableButtons(); //disable buttons in window
                 int errorCounter = 0;
                 while (errorCounter < MAX_IMPORT_TRYS){
-                    returnStatus = serial.importDataFromDevice(importStatus.getProgressBar(), importStatus.getStatusArea());
+                    try {
+                        returnStatus = serial.importDataFromDevice(importStatus.getProgressBar(), importStatus.getStatusArea());
+                    } catch (JSONException ex) {
+                        Logger.getLogger(ServiceRoutine.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                     //importStatus.updateStatus("\nReturn: " + returnStatus);
                     if(returnStatus==0){
                         importStatus.enableButtons();
