@@ -94,6 +94,7 @@ public class Data {
      * Getter for the track identifier (equals to the position in the Data 
      * array list of the class MainWindow.
      * @return track ID
+     * 
      */
     public int getID(){return trackID;}
 
@@ -103,14 +104,17 @@ public class Data {
      * @param lon longitude of the point
      * @param date date in the format ddMMyy
      * @param time time in the format hhmmsscc
+     * @param trackID identifiant du track
      * @param s1 values of sensor 1 (1-255 for gaz value, 0 for error)
      * @param s2 values of sensor 2 (1-255 for gaz value, 0 for error)
      * @param s3 values of sensor 3 (0-100 for humidity, else error = grey)
      * @param s4 values of sensor 4 (
+     * @param s5
+     * @param sent
      */
-    public void storePoint(double lat, double lon, long date, long time, int s1, int s2, int s3, int s4, int s5, boolean sent){
+    public void storePoint(int trackID, double lat, double lon, long date, long time, int s1, int s2, int s3, int s4, int s5, boolean sent){
            DataPoint point = new DataPoint();
-           point.setDataPoint(lat, lon, pointList.size(),date,time,s1,s2,s3,s4,s5,sent);
+           point.setDataPoint(trackID, lat, lon, pointList.size(),date,time,s1,s2,s3,s4,s5,sent);
            pointList.add(point);
        }
     
@@ -130,7 +134,7 @@ public class Data {
         
         long d = Long.parseLong(date.format(cal.getTime()));
         long t = Long.parseLong(time.format(cal.getTime())) * 100; //add hundreths
-        point.setDataPoint(lat,lon,pointList.size(),d,t,poll,poll,poll,poll,-1,true); //true: never send manual points to server
+        point.setDataPoint(-1,lat,lon,pointList.size(),d,t,poll,poll,poll,poll,-1,true); //true: never send manual points to server
         pointList.add(point);
     }
     
@@ -242,31 +246,33 @@ public class Data {
             if("$BMVAL".equals(seperated[0])){
                 //seperated[0]: identifier ($BMVAL)
                 //seperated[1]: id_value
-                //seperated[2]: latitude
-                //seperated[3]: longitude
-                //seperated[4]: ddmmyy
-                //seperated[5]: hhmmsscc
-                //seperated[6]: s1
-                //seperated[7]: s2
-                //seperated[8]: s3
-                //seperated[9]: s4
+                //seperated[2]: track_id
+                //seperated[3]: latitude
+                //seperated[4]: longitude
+                //seperated[5]: ddmmyy
+                //seperated[6]: hhmmsscc
+                //seperated[7]: s1
+                //seperated[8]: s2
+                //seperated[9]: s3
+                //seperated[10]: s4
                 
                 //lat format: 46519025
-            long rawLat = Long.parseLong(seperated[2]);
-            long rawLon = Long.parseLong(seperated[3]);
+            int trackID = Integer.parseInt(seperated[2]);
+            long rawLat = Long.parseLong(seperated[3]);
+            long rawLon = Long.parseLong(seperated[4]);
 
-            long date = Long.parseLong(seperated[4]);
-            long time = Long.parseLong(seperated[5]);
-            int s1 = Integer.parseInt(seperated[6]);
-            int s2 = Integer.parseInt(seperated[7]);
-            int s3 = Integer.parseInt(seperated[8]);
-            int s4 = Integer.parseInt(seperated[9]);
+            long date = Long.parseLong(seperated[5]);
+            long time = Long.parseLong(seperated[6]);
+            int s1 = Integer.parseInt(seperated[7]);
+            int s2 = Integer.parseInt(seperated[8]);
+            int s3 = Integer.parseInt(seperated[9]);
+            int s4 = Integer.parseInt(seperated[10]);
             int s5 = 0;
             double latitude = rawLat / 1000000.00;
             double longitude = rawLon / 1000000.00;
             if(DATA_DEBUG) BeMapEditor.mainWindow.append("Point " +seperated[0]+": "+rawLat+","+rawLon+" "+date+" "+time+" "+s1+" "+s2+" "+s3+" "+s4+" "+s5+"\n");
 
-                storePoint(latitude,longitude, date,time,s1,s2,s3,s4,s5,false);
+                storePoint(trackID,latitude,longitude,date,time,s1,s2,s3,s4,s5,false);
             
                 pointCounter++;
                 errorType = 0; //there's at least one point stored
@@ -347,6 +353,19 @@ public class Data {
         
     }
     
+    public String exportCSV(){
+        String send = "";
+        
+        Iterator<DataPoint> it = pointList.iterator();
+        while(it.hasNext())
+        {
+            DataPoint p = it.next();
+            send += p.getDataPointCSV();
+        }
+        
+        return send;
+    }
+    
     /**
      * Creates a JSONArray containing all the points of the data layer
      * @return JSONArray containing JSONObjects (datapoints)
@@ -411,6 +430,7 @@ public class Data {
             double lon = innerObj.getDouble("lon");
             long date = innerObj.getLong("date");
             long time = innerObj.getLong("time");
+            int trackID = innerObj.getInt("track");
             int s1 = innerObj.getInt("s1");
             int s2 = innerObj.getInt("s2");
             int s3 = innerObj.getInt("s3");
@@ -418,7 +438,7 @@ public class Data {
             int s5 = innerObj.getInt("s5"); //acc
             boolean sent = innerObj.getBoolean("sent");
             
-            storePoint(lat,lon,date,time,s1,s2,s3,s4,s5,sent);
+            storePoint(trackID,lat,lon,date,time,s1,s2,s3,s4,s5,sent);
             
           }
         return pointsNumber;
@@ -449,13 +469,14 @@ public class Data {
             double lon = innerObj.getDouble("lon");
             long date = innerObj.getLong("date");
             long time = innerObj.getLong("time");
+            int trackID = innerObj.getInt("track");
             int s1 = innerObj.getInt("s1");
             int s2 = innerObj.getInt("s2");
             int s3 = innerObj.getInt("s3");
             int s4 = innerObj.getInt("s4"); //temperature
             int s5 = innerObj.getInt("s5"); //acc
             
-            storePoint(lat,lon,date,time,s1,s2,s3,s4,s5,true);
+            storePoint(trackID,lat,lon,date,time,s1,s2,s3,s4,s5,true);
             
           }
         return pointsNumber;

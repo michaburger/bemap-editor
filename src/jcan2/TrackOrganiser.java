@@ -191,6 +191,30 @@ public class TrackOrganiser extends javax.swing.JFrame {
         if(TRACK_DEBUG) BeMapEditor.mainWindow.append(usrObj.toString());
         return usrObj;
     }
+    /**
+     * 
+     * @return String containing all the data to be written in the csv file
+     */
+    public String prepareCSVtoExport() throws JSONException {
+        String csvExport = "Point ID, Device ID, Track ID, Date, Latitude, Longitude, "
+                + "Temperature, Humidity, CO sensor RAW, NOx sensor RAW, Road quality, "
+                + "CO ppm, NOx ppm\n";
+        
+        
+        //loop through all data layers and add them into a JSONArray
+        Iterator<Data> it = trackList.iterator();
+        while(it.hasNext())
+        {
+            if(TRACK_DEBUG) BeMapEditor.mainWindow.append("\nNew Layer");
+            Data d = it.next();
+            //don't export the global layer
+            if(d.getID()!=0){
+                csvExport += d.exportCSV();
+            }
+            
+        }
+        return csvExport;
+    }
     
     /**
      * Prepares a String containing all the data, for export to server (only 
@@ -469,4 +493,6 @@ public class TrackOrganiser extends javax.swing.JFrame {
     private javax.swing.JComboBox trackChooser;
     private javax.swing.JTextField trackNameField;
     // End of variables declaration//GEN-END:variables
+
+    
 }

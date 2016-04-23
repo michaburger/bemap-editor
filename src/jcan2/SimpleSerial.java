@@ -30,7 +30,7 @@ import org.json.JSONObject;
  */
 public class SimpleSerial {
     private String serialPortName = "Error - no Port found";
-    private static final boolean SERIAL_DEBUG = true;
+    private static final boolean SERIAL_DEBUG = false;
     private static final int MAX_DATA_PER_IMPORT = 14;
     private static final int WAIT_MS = 50; //time to wait for the device to respond
     private static final int WAIT_MS_POINTS = WAIT_MS + 10*MAX_DATA_PER_IMPORT; //time to wait for the device to respond
@@ -157,7 +157,7 @@ public int importDataFromDevice(JProgressBar progressBar, JTextArea status) thro
          
             try {
                 serialPort.openPort();//Open serial port
-                serialPort.setParams(SerialPort.BAUDRATE_9600, 
+                serialPort.setParams(SerialPort.BAUDRATE_115200, 
                                     SerialPort.DATABITS_8,
                                     SerialPort.STOPBITS_1,
                                     SerialPort.PARITY_NONE);//Set params. Also you can set params by this string: serialPort.setParams(9600, 8, 1, 0);

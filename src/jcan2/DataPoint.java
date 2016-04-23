@@ -16,7 +16,8 @@ import org.openstreetmap.gui.jmapviewer.Coordinate;
  */
 public class DataPoint {
 
-    private int id;
+    private long id;
+    private int trackID;
     private double lat;
     private double lon;
     private long date; //ddMMyy
@@ -55,6 +56,7 @@ public class DataPoint {
         point.put("lon",lon);
         point.put("date",date);
         point.put("time",time);
+        point.put("track",trackID);
         point.put("s1",co);
         point.put("s2",no2);
         point.put("s3",hum);
@@ -62,6 +64,31 @@ public class DataPoint {
         point.put("s5", vib); //envoyer 0 en attendant
         point.put("sent",onServer);
         return point;
+    }
+    
+    public String getDataPointCSV(){
+        String dataPoint = "";
+        String separator = ",";
+        
+        String usr = ""+BeMapEditor.mainWindow.getUsr();
+        
+        dataPoint += id + separator;
+        dataPoint += usr + separator;
+        dataPoint += trackID + separator;
+        dataPoint += getCSVDateFormat() + separator;
+        dataPoint += lat + separator;
+        dataPoint += lon + separator;
+        dataPoint += temp/100.0 + separator;
+        dataPoint += hum/100.0 + separator;
+        dataPoint += co + separator;
+        dataPoint += no2 + separator;
+        dataPoint += vib + separator;
+        dataPoint += convertCOppm() + separator;
+        dataPoint += convertNOppm() + separator;
+        
+        dataPoint += "\n";
+        
+        return dataPoint;
     }
     
     public JSONObject getDataPointJSONForServer()throws JSONException {
@@ -72,6 +99,7 @@ public class DataPoint {
         point.put("lon",lon);
         point.put("date",date);
         point.put("time",time);
+        point.put("track",trackID);
         point.put("s1",co);
         point.put("s2",no2);
         point.put("s3",hum);
@@ -83,6 +111,7 @@ public class DataPoint {
      //setter 
     /**
      * Sets the values for a data point.
+     * @param trackID track identifier
      * @param lat Latitude in decimal degrees
      * @param lon Longitude in decimal degrees
      * @param id Identifier
@@ -94,8 +123,9 @@ public class DataPoint {
      * @param s4 Temperature
      * @param s5 Accelerometer
      */
-    public void setDataPoint(double lat, double lon, int id, long date, long time,int s1, int s2, int s3, int s4, int s5, boolean sent){
+    public void setDataPoint(int trackID, double lat, double lon, int id, long date, long time,int s1, int s2, int s3, int s4, int s5, boolean sent){
         this.id = id;
+        this.trackID = trackID;
         this.lat = lat;
         this.lon = lon;
         this.date = date;
@@ -142,7 +172,7 @@ public class DataPoint {
         return lon;
     }
     
-    public int id(){return id;}
+    public long id(){return id;}
     
     //returns latitude of the given point
     /**
@@ -190,6 +220,22 @@ public class DataPoint {
         return d;
     }
     
+    public String getCSVDateFormat(){
+        String format = "";
+        
+        int day = (int) date / 10000;
+        int month = (int) date / 100 - day * 100;
+        int year = (int) date - day * 10000 - month * 100;
+        int hour = (int) time / 1000000;
+        int min = (int) ((time /  10000) - hour * 100);
+        int sec = (int) ((time / 100) - min * 100 - hour * 10000);
+        
+        format += year + "-" + month + "-" + day + " " + hour + ":"
+                + min + ":" + sec;
+        
+        return format;
+    }
+    
     
     /**
      * Date getter
@@ -226,6 +272,14 @@ public class DataPoint {
                     
         }
         return 0;
+    }
+    
+    public double convertCOppm(){
+        return Math.pow(10,(0.64-1.21*Math.log10((1024.0-co)/co)));
+    }
+    
+    public double convertNOppm(){
+        return Math.pow(10,(0.809+1.031*Math.log10((1024.0-no2)/no2)));
     }
     
     public static Color chooseColor(int value, int type, int opacity){

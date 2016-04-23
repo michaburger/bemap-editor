@@ -36,6 +36,7 @@ public class MainWindow extends javax.swing.JFrame {
     private final boolean WINDOW_DEBUG = false;
     private final String DEFAULT_FILENAME = "data";
     private final String DEFAULT_EXTENSION = ".bemap";
+    private final String DEFAULT_CSV_EXTENSION = ".csv";
     private final String DEFAULT_FILENAME_COMPLETE = DEFAULT_FILENAME + DEFAULT_EXTENSION;
     private final String ERROR_MSG_NO_ID_FOUND = "Error: No user ID found. Please connect your device to"
                     + "import points or import existing data from a .bemap"
@@ -355,19 +356,25 @@ public class MainWindow extends javax.swing.JFrame {
     
     }
     
-    
-    
+    private void exportToFile(String pathAndName){
+        exportToFile(pathAndName,"JSON");
+    }
     
     /**
      * Exports all the current data (including all the tracks) to a file.
      * @param pathAndName Filepath including filename.
+     * @param dataType Either "JSON" or "CSV" to specify the data type.
      */
-    private void exportToFile(String pathAndName){
+    private void exportToFile(String pathAndName, String dataType){
         PrintWriter writer= null;
         
         try {
             writer = new PrintWriter(pathAndName, "UTF-8");
-            writer.print(BeMapEditor.trackOrganiser.prepareJSONtoExport());
+            if("JSON".equals(dataType)) writer.print(BeMapEditor.trackOrganiser.prepareJSONtoExport());
+            if("CSV".equals(dataType)) writer.print(BeMapEditor.trackOrganiser.prepareCSVtoExport());
+            else if (WINDOW_DEBUG) statusArea.append("Error: Data type not known\n");
+            statusArea.append("Output file "+pathAndName+" exported\n");
+            writer.close();
         } catch (FileNotFoundException ex) {
             Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
             statusArea.append("Error: Unsupported Encoding Exception\n");
@@ -376,11 +383,10 @@ public class MainWindow extends javax.swing.JFrame {
             statusArea.append("Error: File not found\n");
         } catch (JSONException ex) {
             Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
-        } 
-        
-        statusArea.append("Output file "+pathAndName+" exported\n");
-        writer.close();
+        }       
     }
+    
+    
     
     public void exportToFilePublic(String pathAndName){
         PrintWriter writer= null;
@@ -476,6 +482,7 @@ public class MainWindow extends javax.swing.JFrame {
             append(ERROR_MSG_NO_ID_FOUND);
         }
         else{
+          append(System.getProperty("." + File.separator + "my.properties")+"\n");
           exportToFile("data.bemap"); //export data.bemap to the same path
           append("Data successfully saved\n");
         }
@@ -496,6 +503,21 @@ public class MainWindow extends javax.swing.JFrame {
         String path = fileChooserGetPath();
         if(!fileExists(path + BeMapEditor.settings.getExportName()+DEFAULT_EXTENSION)){
             exportToFile(path + BeMapEditor.settings.getExportName()+DEFAULT_EXTENSION);
+        }
+        else append(ERROR_MSG_FILE_EXISTS);
+       }
+    }
+    
+    private void saveCSV(){
+        
+        if(usr == -1){
+            //no user has been defined
+            append(ERROR_MSG_NO_ID_FOUND);
+       }
+       else{ 
+        String path = fileChooserGetPath();
+        if(!fileExists(path + BeMapEditor.settings.getExportName()+DEFAULT_CSV_EXTENSION)){
+            exportToFile(path + BeMapEditor.settings.getExportName()+DEFAULT_CSV_EXTENSION,"CSV");
         }
         else append(ERROR_MSG_FILE_EXISTS);
        }
@@ -632,6 +654,7 @@ public class MainWindow extends javax.swing.JFrame {
         openBar = new javax.swing.JMenuItem();
         jSeparator5 = new javax.swing.JPopupMenu.Separator();
         saveBar = new javax.swing.JMenuItem();
+        jMenuItem13 = new javax.swing.JMenuItem();
         saveAsBar = new javax.swing.JMenuItem();
         jSeparator7 = new javax.swing.JPopupMenu.Separator();
         importServerBar = new javax.swing.JMenuItem();
@@ -697,17 +720,18 @@ public class MainWindow extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        map.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseReleased(java.awt.event.MouseEvent evt) {
-                mapMouseReleased(evt);
-            }
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                mapMouseClicked(evt);
-            }
-        });
+        map.setPreferredSize(new java.awt.Dimension(400, 300));
         map.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
             public void mouseDragged(java.awt.event.MouseEvent evt) {
                 mapMouseDragged(evt);
+            }
+        });
+        map.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                mapMouseClicked(evt);
+            }
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                mapMouseReleased(evt);
             }
         });
 
@@ -827,6 +851,14 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
         fileMenu.add(saveBar);
+
+        jMenuItem13.setText("Save .csv");
+        jMenuItem13.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem13ActionPerformed(evt);
+            }
+        });
+        fileMenu.add(jMenuItem13);
 
         saveAsBar.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
         saveAsBar.setText("Save as...");
@@ -1027,17 +1059,15 @@ public class MainWindow extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
+                    .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel1)
                             .addComponent(trackField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(manageTracksButton))
                         .addGap(11, 11, 11)))
-                .addComponent(map, javax.swing.GroupLayout.PREFERRED_SIZE, 437, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
+                .addComponent(map, javax.swing.GroupLayout.DEFAULT_SIZE, 350, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(sensorSlider, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(timeSlider, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1057,7 +1087,7 @@ public class MainWindow extends javax.swing.JFrame {
                             .addComponent(memoryBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addGap(7, 7, 7)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         pack();
@@ -1142,7 +1172,7 @@ public class MainWindow extends javax.swing.JFrame {
 
     private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
         save();
-        exportToServer();
+        //exportToServer();
     }//GEN-LAST:event_saveButtonActionPerformed
 
     private void openBarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openBarActionPerformed
@@ -1289,6 +1319,13 @@ public class MainWindow extends javax.swing.JFrame {
         
     }//GEN-LAST:event_renderMenuActionPerformed
 
+    /**
+     * Save as CSV file
+    */
+    private void jMenuItem13ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem13ActionPerformed
+        saveCSV();
+    }//GEN-LAST:event_jMenuItem13ActionPerformed
+
     
     
     /**
@@ -1326,6 +1363,7 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem10;
     private javax.swing.JMenuItem jMenuItem11;
     private javax.swing.JMenuItem jMenuItem12;
+    private javax.swing.JMenuItem jMenuItem13;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JMenuItem jMenuItem4;
