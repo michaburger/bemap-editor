@@ -31,7 +31,7 @@ import org.json.JSONObject;
 public class SimpleSerial {
     private String serialPortName = "Error - no Port found";
     private static final boolean SERIAL_DEBUG = false;
-    private static final int MAX_DATA_PER_IMPORT = 14;
+    private static final int MAX_DATA_PER_IMPORT = 20;
     private static final int WAIT_MS = 50; //time to wait for the device to respond
     private static final int WAIT_MS_POINTS = WAIT_MS + 10*MAX_DATA_PER_IMPORT; //time to wait for the device to respond
     //Test: 100ms = 15 points
@@ -149,7 +149,7 @@ public JSONObject getRealTimeData() throws InterruptedException, JSONException{
 
 
 //returns the number of points stored or -1 if error
-public int importDataFromDevice(JProgressBar progressBar, JTextArea status) throws InterruptedException{
+public int importDataFromDevice(JProgressBar progressBar, JTextArea status) throws InterruptedException, JSONException{
     if("Error - no Port found".equals(serialPortName)) return -1;
     else{
         SerialPort serialPort = new SerialPort(serialPortName);
@@ -174,7 +174,7 @@ public int importDataFromDevice(JProgressBar progressBar, JTextArea status) thro
                     //code for getting usr id from server
                     //$ORUSR,25*11\n
                     status.append("\nError: Getting user ID from server not yet supported!");
-                    BeMapEditor.mainWindow.setUsr(3);
+                    BeMapEditor.mainWindow.setUsr(7);
                 }
                 else {
                     status.append("\nError: No User ID found! Import aborted.");
@@ -197,6 +197,7 @@ public int importDataFromDevice(JProgressBar progressBar, JTextArea status) thro
                 
                 //prepare track to import
                 BeMapEditor.trackOrganiser.createNewTrack("Import");
+                
                 
                 int nbRequests = (totalNumber/(MAX_DATA_PER_IMPORT))+1;
                 int rest = totalNumber - (nbRequests-1) * MAX_DATA_PER_IMPORT; //nb of points for the last request
@@ -224,6 +225,8 @@ public int importDataFromDevice(JProgressBar progressBar, JTextArea status) thro
                 decodeMemoryState(serialPort.readString());
                 
                 serialPort.closePort();//Close serial port
+                
+                BeMapEditor.trackOrganiser.postImportTreatment(progressBar);
                 return 1;
             }
             catch (SerialPortException ex) {
@@ -276,7 +279,10 @@ public int updateMemoryState() throws InterruptedException{
             } 
     }
 }
-
+/**
+ * BMCFG - config
+ * @param memoryState 
+ */
 private void decodeMemoryState(String memoryState){
     //decompose the received data
         String[] lines = memoryState.split("\n");

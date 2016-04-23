@@ -31,7 +31,7 @@ public class ServerCommunication {
 
 	private final String USER_AGENT = "Mozilla/5.0";
         private final String DOMAIN = "http://bemap.lapijover.eu/";
-        private final boolean SERVER_DEBUG = true;
+        private final boolean SERVER_DEBUG = false;
 
 
         /**

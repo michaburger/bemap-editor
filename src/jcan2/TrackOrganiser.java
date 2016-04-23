@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JProgressBar;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -24,6 +25,7 @@ public class TrackOrganiser extends javax.swing.JFrame {
     private static final boolean TRACK_DEBUG = true;
     public static final int GLOBAL = 0;
     public static final int PUBLIC = 1;
+    private static final int MIN_NB_POINTS_IMPORT = 10;
     private final ArrayList<Data> trackList = new ArrayList<>(); //contains all the tracks
     private Data currentTrack;
     private int idCounter = 0;
@@ -52,6 +54,7 @@ public class TrackOrganiser extends javax.swing.JFrame {
         }
     }
     
+    
     public void createNewTrack(String name){
         currentTrack = new Data(idCounter,name); //create first data layer remove
         idCounter++;
@@ -60,6 +63,7 @@ public class TrackOrganiser extends javax.swing.JFrame {
         updateTrackChooser();
     }
     
+    //function should be optimised (re-writing of content)
     public void createNewTrack(String name, JSONArray gpsData) throws JSONException{
         currentTrack = new Data(idCounter,name); //create first data layer remove
         idCounter++;
@@ -162,6 +166,38 @@ public class TrackOrganiser extends javax.swing.JFrame {
             trackNameField.setText(newName);
             updateTrackChooser();
         }
+    }
+    
+    /**
+     * Data treatment that has to be done after the import can be added here:
+     * For instance:
+     * Splits the imported tracks into several tracks after the import.
+     */
+    public void postImportTreatment(JProgressBar progressBar) throws JSONException{
+        BeMapEditor.mainWindow.append("\nTreatment...");
+        
+        Data importTrack = currentTrack;
+        int firstTrackID = currentTrack.getFirstTrackID();
+        int lastTrackID = currentTrack.getLastTrackID();
+        
+        if(TRACK_DEBUG) BeMapEditor.mainWindow.append("\nFirst track: "+firstTrackID
+            + " Last track: "+lastTrackID);
+        progressBar.setMinimum(firstTrackID);
+        progressBar.setMaximum(lastTrackID);
+       
+        for (int i=firstTrackID;i<=lastTrackID;i++){
+            progressBar.setValue(i);
+            int nb = importTrack.getNumberOfPoints(i);
+            if(nb >= MIN_NB_POINTS_IMPORT){
+                createNewTrack("Track "+i);
+                if(TRACK_DEBUG) BeMapEditor.mainWindow.append("\nTrack "+i+" has "+nb+" points.");
+                currentTrack.importJSONList(importTrack.exportJSONLayer(i));
+            }
+            else if(TRACK_DEBUG) BeMapEditor.mainWindow.append("\nTrack "+i+" has "+nb+" points: No track created!");
+        }
+        
+        BeMapEditor.mainWindow.append("\nTreatment ok!");
+        
     }
     
     /**

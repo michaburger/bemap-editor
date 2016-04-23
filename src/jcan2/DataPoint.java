@@ -41,6 +41,8 @@ public class DataPoint {
     public void DataPoint(){
     
     }
+    
+    public int getTrackID(){return trackID;}
 
     //getter (returns a point as a JSON object)
     /**

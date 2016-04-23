@@ -74,6 +74,29 @@ public class Data {
     public void setID(int id){
         trackID = id;
     }
+    /**
+     * 
+     * @return the total number of points in this data layer
+     */
+    public int getNumberOfPoints(){return pointList.size();}
+    
+    /**
+     * When the trackID is given as a parameter, it will return the number of 
+     * points of the transmitted track number
+     * @param trackID
+     * @return number of points of the transmitted track ID
+     */
+    public int getNumberOfPoints(int trackID){
+        int counter = 0;
+        Iterator<DataPoint> it = pointList.iterator();
+        while(it.hasNext())
+        {
+            DataPoint p = it.next();
+            if(p.getTrackID() == trackID) counter++;
+        }
+        
+        return counter;
+    }
     
     public String getBuffer() {return outputDataString;}
 
@@ -367,6 +390,55 @@ public class Data {
     }
     
     /**
+     * 
+     * @return number of tracks stored in this data layer (for splitting up in
+     * real bicycle tracks
+     */
+    public int getNumberOfTracks(){
+        //first element
+        int firstTrack = pointList.get(0).getTrackID();
+        //last element
+        int lastTrack = pointList.get(pointList.size()-1).getTrackID();
+        
+        return (lastTrack - firstTrack + 1);
+    }
+    /**
+     * 
+     * @return ID of the first track of this data layer
+     */
+    public int getFirstTrackID(){
+        return pointList.get(0).getTrackID();
+    }
+    /**
+     * 
+     * @return ID of the last track of this data layer
+     */
+    public int getLastTrackID(){
+        return pointList.get(pointList.size()-1).getTrackID();
+    }
+    /**
+     * returns a JSONArray, but only containing the points of the trackID
+     * transmitted as an argument.
+     * 
+     * @param trackID only points of this trackID will be returned in the array.
+     * @return 
+     * @throws org.json.JSONException 
+     */
+    public JSONArray exportJSONLayer(int trackID) throws JSONException{
+        //this will be the track array of one single track.
+        JSONArray jsonArray = new JSONArray();
+        
+        Iterator<DataPoint> it = pointList.iterator();
+        while(it.hasNext())
+        {
+            DataPoint p = it.next();
+            if(p.getTrackID() == trackID) jsonArray.put(p.getDataPointJSON());
+        }
+
+        return jsonArray;
+    }
+    
+    /**
      * Creates a JSONArray containing all the points of the data layer
      * @return JSONArray containing JSONObjects (datapoints)
      * @throws JSONException 
@@ -416,9 +488,7 @@ public class Data {
      */
     public int importJSONList(JSONArray gpsData) throws JSONException{
 
-        
         //attention: value for s4 corresponds to a temperature. it should be drawn in a blue-orange color range.
-        
         
         int pointsNumber = gpsData.length();
         
