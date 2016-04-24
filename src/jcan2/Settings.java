@@ -46,8 +46,9 @@ public class Settings extends javax.swing.JFrame {
     }
     
     private void update(){
-        String usr = ""+BeMapEditor.mainWindow.getUsr();
-        idField.setText(usr);
+        int usr = BeMapEditor.mainWindow.getUsrIDofConnectedDevice();
+        if(usr == -1 ) idField.setText("---");
+        else idField.setText(""+usr);
     }
     
     public int getTransparency(){
@@ -119,6 +120,11 @@ public class Settings extends javax.swing.JFrame {
         normalPoints.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 normalPointsMouseClicked(evt);
+            }
+        });
+        normalPoints.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                normalPointsActionPerformed(evt);
             }
         });
 
@@ -210,6 +216,10 @@ public class Settings extends javax.swing.JFrame {
     private void transparencySliderMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_transparencySliderMouseReleased
         BeMapEditor.mainWindow.updateMap();
     }//GEN-LAST:event_transparencySliderMouseReleased
+
+    private void normalPointsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_normalPointsActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_normalPointsActionPerformed
 
    
     

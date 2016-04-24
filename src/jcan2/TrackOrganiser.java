@@ -25,7 +25,7 @@ public class TrackOrganiser extends javax.swing.JFrame {
     private static final boolean TRACK_DEBUG = true;
     public static final int GLOBAL = 0;
     public static final int PUBLIC = 1;
-    private static final int MIN_NB_POINTS_IMPORT = 10;
+    private static final int MIN_NB_POINTS_IMPORT = 50;
     private final ArrayList<Data> trackList = new ArrayList<>(); //contains all the tracks
     private Data currentTrack;
     private int idCounter = 0;
@@ -221,11 +221,8 @@ public class TrackOrganiser extends javax.swing.JFrame {
                 trackArr.put(d.getLayerName(),d.exportJSONList());
             }
         }
-        
-        JSONObject usrObj = new JSONObject();
-        usrObj.put(BeMapEditor.mainWindow.getUsrString(), trackArr);
-        if(TRACK_DEBUG) BeMapEditor.mainWindow.append(usrObj.toString());
-        return usrObj;
+
+        return trackArr;
     }
     /**
      * 
@@ -332,6 +329,7 @@ public class TrackOrganiser extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("BeMap Track Organiser");
+        setResizable(false);
 
         jLabel1.setText("Organise your cycling tracks");
 
@@ -341,12 +339,12 @@ public class TrackOrganiser extends javax.swing.JFrame {
             }
         });
         trackChooser.addPopupMenuListener(new javax.swing.event.PopupMenuListener() {
-            public void popupMenuWillBecomeVisible(javax.swing.event.PopupMenuEvent evt) {
+            public void popupMenuCanceled(javax.swing.event.PopupMenuEvent evt) {
             }
             public void popupMenuWillBecomeInvisible(javax.swing.event.PopupMenuEvent evt) {
                 trackChooserPopupMenuWillBecomeInvisible(evt);
             }
-            public void popupMenuCanceled(javax.swing.event.PopupMenuEvent evt) {
+            public void popupMenuWillBecomeVisible(javax.swing.event.PopupMenuEvent evt) {
             }
         });
         trackChooser.addComponentListener(new java.awt.event.ComponentAdapter() {
@@ -407,10 +405,6 @@ public class TrackOrganiser extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(131, 131, 131)
-                .addComponent(closeButton)
-                .addGap(0, 0, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
                 .addGap(26, 26, 26)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
@@ -438,7 +432,11 @@ public class TrackOrganiser extends javax.swing.JFrame {
                                         .addComponent(newTrackButton)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(renameTrackButton)))))
-                        .addGap(0, 22, Short.MAX_VALUE))))
+                        .addGap(0, 21, Short.MAX_VALUE))))
+            .addGroup(layout.createSequentialGroup()
+                .addGap(134, 134, 134)
+                .addComponent(closeButton)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -462,9 +460,9 @@ public class TrackOrganiser extends javax.swing.JFrame {
                     .addComponent(mergeButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel2)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 46, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(closeButton)
-                .addContainerGap())
+                .addContainerGap(194, Short.MAX_VALUE))
         );
 
         pack();

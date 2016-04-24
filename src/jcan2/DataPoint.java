@@ -17,6 +17,7 @@ import org.openstreetmap.gui.jmapviewer.Coordinate;
 public class DataPoint {
 
     private long id;
+    private int deviceUsrID;
     private int trackID;
     private double lat;
     private double lon;
@@ -24,8 +25,8 @@ public class DataPoint {
     private long time; //hhmmsscc
     private int co; //sensor values
     private int no2;
-    private int hum;
-    private int temp;
+    private int hum; //to divide by 100.0!
+    private int temp; //to divide by 100.0!
     private int vib;
     private boolean set = false; //defines if a point has been defined
     private boolean onServer = false; //defines if the point has already been sent to the server
@@ -37,6 +38,12 @@ public class DataPoint {
     static final int TYPE_ACC = 5;
     static final int TYPE_GREY = -1; //pollution placeholder for drawing a grey point
     static final int TEMPERATURE_OFFSET = -7;
+    
+    static final int SENSOR_CO = 1;
+    static final int SENSOR_NO = 2;
+    static final int SENSOR_HUM = 3;
+    static final int SENSOR_TEMP = 4;
+    static final int SENSOR_VIB = 5;
     
     public void DataPoint(){
     
@@ -54,6 +61,7 @@ public class DataPoint {
         //create a new JSONObject, fill it and return it
         JSONObject point = new JSONObject();
         point.put("id",id);
+        point.put("usr",deviceUsrID);
         point.put("lat",lat);
         point.put("lon",lon);
         point.put("date",date);
@@ -68,14 +76,16 @@ public class DataPoint {
         return point;
     }
     
+    public int getUsr(){return deviceUsrID;}
+    
+    public void setUsr(int usr){this.deviceUsrID = usr;}
+    
     public String getDataPointCSV(){
         String dataPoint = "";
         String separator = ",";
         
-        String usr = ""+BeMapEditor.mainWindow.getUsr();
-        
         dataPoint += id + separator;
-        dataPoint += usr + separator;
+        dataPoint += deviceUsrID + separator;
         dataPoint += trackID + separator;
         dataPoint += getCSVDateFormat() + separator;
         dataPoint += lat + separator;
@@ -97,6 +107,7 @@ public class DataPoint {
         //create a new JSONObject, fill it and return it
         JSONObject point = new JSONObject();
         point.put("id",id);
+        point.put("usr",deviceUsrID);
         point.put("lat",lat);
         point.put("lon",lon);
         point.put("date",date);
@@ -119,24 +130,25 @@ public class DataPoint {
      * @param id Identifier
      * @param date Date in ddMMyy
      * @param time Time in hhmmsscc
-     * @param s1 CO
-     * @param s2 NO2
-     * @param s3 Humidity
-     * @param s4 Temperature
-     * @param s5 Accelerometer
+     * @param co CO
+     * @param no NO2
+     * @param hum Humidity
+     * @param temp Temperature
+     * @param vib Accelerometer
      */
-    public void setDataPoint(int trackID, double lat, double lon, int id, long date, long time,int s1, int s2, int s3, int s4, int s5, boolean sent){
+    public void setDataPoint(int usr, int trackID, double lat, double lon, int id, long date, long time,int co, int no, int hum, int temp, int vib, boolean sent){
         this.id = id;
+        this.deviceUsrID = usr;
         this.trackID = trackID;
         this.lat = lat;
         this.lon = lon;
         this.date = date;
         this.time = time;
-        this.co = s1;
-        this.no2 = s2;
-        this.hum = s3;
-        this.temp = s4;
-        this.vib = s5;
+        this.co = co;
+        this.no2 = no;
+        this.hum = hum;
+        this.temp = temp;
+        this.vib = vib;
         onServer = sent;
 
         set = true;
@@ -249,11 +261,11 @@ public class DataPoint {
      * @return Time in hhmmsscc
      */
     public long time(){return time;}
-    public int s1(){return co;}
-    public int s2(){return no2;}
-    public double s3(){return hum;}
-    public double s4(){return temp;}
-    public int s5(){return vib;}
+    public int co(){return co;}
+    public int no2(){return no2;}
+    public double hum(){return hum/100.0;}
+    public double temp(){return temp/100.0;}
+    public int vib(){return vib;}
     
     /**
      * Get the value of a specific sensor
@@ -262,15 +274,15 @@ public class DataPoint {
      */
     public int getSensor(int sensorNb){
         switch(sensorNb){
-            case 1: return co;
+            case SENSOR_CO: return co;
                     
-            case 2: return no2;
+            case SENSOR_NO: return no2;
                     
-            case 3: return hum;
+            case SENSOR_HUM: return hum;
                     
-            case 4: return temp;
+            case SENSOR_TEMP: return temp;
                 
-            case 5: return vib;
+            case SENSOR_VIB: return vib;
                     
         }
         return 0;

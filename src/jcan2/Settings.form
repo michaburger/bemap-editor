@@ -154,6 +154,7 @@
       </Properties>
       <Events>
         <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="normalPointsMouseClicked"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="normalPointsActionPerformed"/>
       </Events>
     </Component>
     <Component class="javax.swing.JRadioButton" name="colorClouds">

@@ -52,6 +52,7 @@ public class Data {
     private int trackID;
     private String layerName;
     private static final int GLOBAL = 0;
+    private static final int PUBLIC = 1;
     private Modeling model = new Modeling();
     
     private static final int NB_POINTS = 18; //for polygon, 360/n must be an int
@@ -128,16 +129,16 @@ public class Data {
      * @param date date in the format ddMMyy
      * @param time time in the format hhmmsscc
      * @param trackID identifiant du track
-     * @param s1 values of sensor 1 (1-255 for gaz value, 0 for error)
-     * @param s2 values of sensor 2 (1-255 for gaz value, 0 for error)
-     * @param s3 values of sensor 3 (0-100 for humidity, else error = grey)
-     * @param s4 values of sensor 4 (
-     * @param s5
+     * @param co values of sensor 1 (1-255 for gaz value, 0 for error)
+     * @param no values of sensor 2 (1-255 for gaz value, 0 for error)
+     * @param hum values of sensor 3 (0-100 for humidity, else error = grey)
+     * @param temp values of sensor 4 (
+     * @param vib
      * @param sent
      */
-    public void storePoint(int trackID, double lat, double lon, long date, long time, int s1, int s2, int s3, int s4, int s5, boolean sent){
+    public void storePoint(int usrID,int trackID, double lat, double lon, long date, long time, int co, int no, int hum, int temp, int vib, boolean sent){
            DataPoint point = new DataPoint();
-           point.setDataPoint(trackID, lat, lon, pointList.size(),date,time,s1,s2,s3,s4,s5,sent);
+           point.setDataPoint(usrID,trackID, lat, lon, pointList.size(),date,time,co,no,hum,temp,vib,sent);
            pointList.add(point);
        }
     
@@ -157,7 +158,7 @@ public class Data {
         
         long d = Long.parseLong(date.format(cal.getTime()));
         long t = Long.parseLong(time.format(cal.getTime())) * 100; //add hundreths
-        point.setDataPoint(-1,lat,lon,pointList.size(),d,t,poll,poll,poll,poll,-1,true); //true: never send manual points to server
+        point.setDataPoint(-1,-1,lat,lon,pointList.size(),d,t,poll,poll,poll,poll,-1,true); //true: never send manual points to server
         pointList.add(point);
     }
     
@@ -274,10 +275,11 @@ public class Data {
                 //seperated[4]: longitude
                 //seperated[5]: ddmmyy
                 //seperated[6]: hhmmsscc
-                //seperated[7]: s1
-                //seperated[8]: s2
-                //seperated[9]: s3
-                //seperated[10]: s4
+                //seperated[7]: co
+                //seperated[8]: no
+                //seperated[9]: humidity
+                //seperated[10]: temperature
+                //seperated[11]: vibrations
                 
                 //lat format: 46519025
             int trackID = Integer.parseInt(seperated[2]);
@@ -286,16 +288,16 @@ public class Data {
 
             long date = Long.parseLong(seperated[5]);
             long time = Long.parseLong(seperated[6]);
-            int s1 = Integer.parseInt(seperated[7]);
-            int s2 = Integer.parseInt(seperated[8]);
-            int s3 = Integer.parseInt(seperated[9]);
-            int s4 = Integer.parseInt(seperated[10]);
-            int s5 = 0;
+            int co = Integer.parseInt(seperated[7]);
+            int no = Integer.parseInt(seperated[8]);
+            int hum = Integer.parseInt(seperated[9]);
+            int temp = Integer.parseInt(seperated[10]);
+            int vib = Integer.parseInt(seperated[11]);
             double latitude = rawLat / 1000000.00;
             double longitude = rawLon / 1000000.00;
-            if(DATA_DEBUG) BeMapEditor.mainWindow.append("Point " +seperated[0]+": "+rawLat+","+rawLon+" "+date+" "+time+" "+s1+" "+s2+" "+s3+" "+s4+" "+s5+"\n");
+            if(DATA_DEBUG) BeMapEditor.mainWindow.append("Point " +seperated[0]+": "+rawLat+","+rawLon+" "+date+" "+time+" "+co+" "+no+" "+hum+" "+temp+" "+vib+"\n");
 
-                storePoint(trackID,latitude,longitude,date,time,s1,s2,s3,s4,s5,false);
+                storePoint(BeMapEditor.mainWindow.getUsrIDofConnectedDevice(),trackID,latitude,longitude,date,time,co,no,hum,temp,vib,false);
             
                 pointCounter++;
                 errorType = 0; //there's at least one point stored
@@ -345,7 +347,7 @@ public class Data {
         long timespread = BeMapEditor.mainWindow.getTimeSliderValue();
         if(DATA_DEBUG) BeMapEditor.mainWindow.append("Time slider: "+timespread+"\n");
         int style = BeMapEditor.settings.NORMAL;
-        if(trackID == GLOBAL) style = BeMapEditor.settings.getGlobalStyle();
+        if(trackID == GLOBAL || trackID == PUBLIC) style = BeMapEditor.settings.getGlobalStyle();
         
         if(pointList.size()>0){
           //iterate through point list
@@ -365,11 +367,11 @@ public class Data {
         
           for (DataPoint dp : pointList) {
               {
-              temp.add(dp.getDateObject().getTime(),dp.s4()/100.0);
-              hum.add(dp.getDateObject().getTime(),dp.s3()/100.0);
-              gaz1.add(dp.getDateObject().getTime(),dp.s1());
-              gaz2.add(dp.getDateObject().getTime(),dp.s2());
-              acc.add(dp.getDateObject().getTime(),dp.s5());
+              temp.add(dp.getDateObject().getTime(),dp.temp()/100.0);
+              hum.add(dp.getDateObject().getTime(),dp.hum()/100.0);
+              gaz1.add(dp.getDateObject().getTime(),dp.co());
+              gaz2.add(dp.getDateObject().getTime(),dp.no2());
+              acc.add(dp.getDateObject().getTime(),dp.vib());
               }
               //else if (DATA_DEBUG) BeMapEditor.mainWindow.append("Point ignored due to time slider\n");
           }
@@ -501,6 +503,7 @@ public class Data {
             long date = innerObj.getLong("date");
             long time = innerObj.getLong("time");
             int trackID = innerObj.getInt("track");
+            int usr = innerObj.getInt("usr");
             int s1 = innerObj.getInt("s1");
             int s2 = innerObj.getInt("s2");
             int s3 = innerObj.getInt("s3");
@@ -508,7 +511,8 @@ public class Data {
             int s5 = innerObj.getInt("s5"); //acc
             boolean sent = innerObj.getBoolean("sent");
             
-            storePoint(trackID,lat,lon,date,time,s1,s2,s3,s4,s5,sent);
+            
+            storePoint(usr,trackID,lat,lon,date,time,s1,s2,s3,s4,s5,sent);
             
           }
         return pointsNumber;
@@ -537,6 +541,7 @@ public class Data {
             //Iterate through the elements of the array j.
             double lat = innerObj.getDouble("lat");
             double lon = innerObj.getDouble("lon");
+            int usr = innerObj.getInt("usr");
             long date = innerObj.getLong("date");
             long time = innerObj.getLong("time");
             int trackID = innerObj.getInt("track");
@@ -546,7 +551,8 @@ public class Data {
             int s4 = innerObj.getInt("s4"); //temperature
             int s5 = innerObj.getInt("s5"); //acc
             
-            storePoint(trackID,lat,lon,date,time,s1,s2,s3,s4,s5,true);
+            
+            storePoint(usr,trackID,lat,lon,date,time,s1,s2,s3,s4,s5,true);
             
           }
         return pointsNumber;

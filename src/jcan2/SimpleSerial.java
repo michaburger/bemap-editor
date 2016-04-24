@@ -121,8 +121,8 @@ public JSONObject getRealTimeData() throws InterruptedException, JSONException{
                 
                 if("$BMRTV".equals(seperated[0])){
                     output.put("err",0);
-                    output.put("temp", Double.parseDouble(seperated[8])); //temp data
-                    output.put("hum", Double.parseDouble(seperated[7]));
+                    output.put("temp", Integer.parseInt(seperated[8])/100.0); //temp data
+                    output.put("hum", Integer.parseInt(seperated[7])/100.0);
                     output.put("gaz1", Integer.parseInt(seperated[5]));
                     output.put("gaz2", Integer.parseInt(seperated[6]));
                     output.put("ax", Double.parseDouble(seperated[9]));
@@ -165,7 +165,7 @@ public int importDataFromDevice(JProgressBar progressBar, JTextArea status) thro
                 serialPort.writeBytes("$ORUSR*11\n".getBytes());//Write data to port
                 Thread.sleep(WAIT_MS);
                 String userString = serialPort.readString();
-                long usr = decodeUserID(userString);
+                int usr = decodeUserID(userString);
                 if(usr > 0){
                     BeMapEditor.mainWindow.setUsr(usr);
                     status.append("\nUser ID: "+usr);
@@ -174,7 +174,7 @@ public int importDataFromDevice(JProgressBar progressBar, JTextArea status) thro
                     //code for getting usr id from server
                     //$ORUSR,25*11\n
                     status.append("\nError: Getting user ID from server not yet supported!");
-                    BeMapEditor.mainWindow.setUsr(7);
+                    BeMapEditor.mainWindow.setUsr(-1);
                 }
                 else {
                     status.append("\nError: No User ID found! Import aborted.");
@@ -344,7 +344,7 @@ private int decodeNbPoints(String numberString){
 }
 
 //returns usr id from string or -1 if error
-private long decodeUserID(String userString){
+private int decodeUserID(String userString){
     //decompose the received data
         String[] lines = userString.split("\n");
         
@@ -353,7 +353,7 @@ private long decodeUserID(String userString){
             String[] seperated = lines[i].split(",");
             
             if("$BMUSR".equals(seperated[0])){
-                return Long.parseLong(seperated[1]);
+                return Integer.parseInt(seperated[1]);
             }
             else if("$BMERR".equals(seperated[0])){
                 return -1;

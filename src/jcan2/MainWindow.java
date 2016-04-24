@@ -43,13 +43,14 @@ public class MainWindow extends javax.swing.JFrame {
                     + "file.\n";
     private final String ERROR_MSG_FILE_EXISTS = "Error: File already exists. Please choose another name.\n";
     String portName = "";
-    private long usr = -1;
+    private int usr = -1; //user id of the device connected
     private boolean dragged = false;
     private SelectField selectRectangle = new SelectField();
     private int timeSpread = 0;
     private final int TYPE_GREY = -1;
     private Coordinate lastClicked = new Coordinate(0,0);
     private final String PUBLIC_DATA = "My public points";
+    private final int PARSE_DECIMAL = 10;
     
 
     /**
@@ -100,7 +101,7 @@ public class MainWindow extends javax.swing.JFrame {
      * Getter for the user id
      * @return user id
      */
-    public long getUsr(){
+    public int getUsrIDofConnectedDevice(){
         return usr;
     }
     
@@ -138,7 +139,7 @@ public class MainWindow extends javax.swing.JFrame {
      * because data export isn't possible without user ID!
      * @param usr User ID
      */
-    public void setUsr(long usr){
+    public void setUsr(int usr){
         this.usr = usr;
     }
     
@@ -253,34 +254,25 @@ public class MainWindow extends javax.swing.JFrame {
      */
     private void importMultipleLayers(String jsonString) throws JSONException{
         
-        JSONObject imported = new JSONObject(jsonString);
-        String[] usrNames = JSONObject.getNames(imported);
-        
-        //import user ID
-        String usrArray[] = usrNames[0].split("usr");
-        usr = Long.parseLong(usrArray[1],10); //parse decimal value
-        //only import data of the first user.
-        if(usrNames.length>1) BeMapEditor.mainWindow.append("Warning: invalid file type (multiple users). Only the first user has been imported.\n");
-        
-        //get the tracks of the first user.
-        JSONObject tracks = imported.getJSONObject(usrNames[0]);
+        JSONObject tracks = new JSONObject(jsonString);
         String[] trackNames = JSONObject.getNames(tracks);
         
         //for every data layer, import points
-        for(int i=0; i<trackNames.length; i++) {
+        for(int j=0; j<trackNames.length; j++) {
           //get the array for the track i.
-          JSONArray gpsData = new JSONArray(tracks.getJSONArray(trackNames[i]).toString());
+          JSONArray gpsData = new JSONArray(tracks.getJSONArray(trackNames[j]).toString());
           
           //do not create a new layer for the public points, but add them to the existing
-          if(PUBLIC_DATA.equals(trackNames[i])){
+          if(PUBLIC_DATA.equals(trackNames[j])){
               BeMapEditor.trackOrganiser.addPublicPoints(gpsData);
           }
-          else{
+        else{
             //for every data layer, create a layer with the correct name and store the points in it.
-            BeMapEditor.trackOrganiser.createNewTrack(trackNames[i],gpsData);
-          }
-          
+            BeMapEditor.trackOrganiser.createNewTrack(trackNames[j],gpsData);
+          }   
         }
+        
+        
     }
  
 /**
@@ -371,8 +363,8 @@ public class MainWindow extends javax.swing.JFrame {
         try {
             writer = new PrintWriter(pathAndName, "UTF-8");
             if("JSON".equals(dataType)) writer.print(BeMapEditor.trackOrganiser.prepareJSONtoExport());
-            if("CSV".equals(dataType)) writer.print(BeMapEditor.trackOrganiser.prepareCSVtoExport());
-            else if (WINDOW_DEBUG) statusArea.append("Error: Data type not known\n");
+            else if("CSV".equals(dataType)) writer.print(BeMapEditor.trackOrganiser.prepareCSVtoExport());
+            else if (WINDOW_DEBUG) statusArea.append("\nError: Data type not known\n");
             statusArea.append("Output file "+pathAndName+" exported\n");
             writer.close();
         } catch (FileNotFoundException ex) {
@@ -477,15 +469,9 @@ public class MainWindow extends javax.swing.JFrame {
      * Saves all the current data to the default file.
      */
     private void save(){
-        if(usr == -1){
-            //no user has been defined
-            append(ERROR_MSG_NO_ID_FOUND);
-        }
-        else{
           append(System.getProperty("." + File.separator + "my.properties")+"\n");
           exportToFile("data.bemap"); //export data.bemap to the same path
           append("Data successfully saved\n");
-        }
     }
     
     /**
