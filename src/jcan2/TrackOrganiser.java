@@ -22,7 +22,7 @@ import org.json.JSONObject;
 public class TrackOrganiser extends javax.swing.JFrame {
 
     
-    private static final boolean TRACK_DEBUG = true;
+    private static final boolean TRACK_DEBUG = false;
     public static final int GLOBAL = 0;
     public static final int PUBLIC = 1;
     private static final int MIN_NB_POINTS_IMPORT = 50;
@@ -229,9 +229,9 @@ public class TrackOrganiser extends javax.swing.JFrame {
      * @return String containing all the data to be written in the csv file
      */
     public String prepareCSVtoExport() throws JSONException {
-        String csvExport = "Point ID, Device ID, Track ID, Date, Latitude, Longitude, "
-                + "Temperature, Humidity, CO sensor RAW, NOx sensor RAW, Road quality, "
-                + "CO ppm, NOx ppm\n";
+        String csvExport = "Date, Device ID, Track ID, Longitude, Latitude,"
+                + "Altitude, Road quality, CO PPM, NOx PPM, CO RAW, NOx RAW, "
+                + "Temperature, Humidity\n";
         
         
         //loop through all data layers and add them into a JSONArray
@@ -241,7 +241,7 @@ public class TrackOrganiser extends javax.swing.JFrame {
             if(TRACK_DEBUG) BeMapEditor.mainWindow.append("\nNew Layer");
             Data d = it.next();
             //don't export the global layer
-            if(d.getID()!=0){
+            if(d.getID()!=GLOBAL && d.getID() != PUBLIC){
                 csvExport += d.exportCSV();
             }
             

@@ -20,9 +20,11 @@ import org.jfree.data.xy.XYSeriesCollection;
 public class trackInfoPanel extends javax.swing.JFrame {
     XYSeries temp = new XYSeries("Temperature °C");
     XYSeries hum = new XYSeries("Humidity %");
-    XYSeries gaz1 = new XYSeries("CO level");
-    XYSeries gaz2 = new XYSeries("NO2 level");
+    XYSeries gaz1 = new XYSeries("CO level RAW");
+    XYSeries gaz2 = new XYSeries("NO2 levelRAW");
     XYSeries acc = new XYSeries("Road vibrations");
+    XYSeries coppm = new XYSeries("CO level ppm");
+    XYSeries noppm = new XYSeries("NO level ppm");
     
     XYSeriesCollection dataset = new XYSeriesCollection();
     
@@ -30,7 +32,7 @@ public class trackInfoPanel extends javax.swing.JFrame {
         JFreeChart chart = ChartFactory.createXYLineChart(
         "Bicycle Track Illustration", // Title
         "time (seconds since midnight)", // x-axis Label
-        "°C – % – ppm/5 ", // y-axis Label
+        "°C – % – ppm / RAW ", // y-axis Label
         dataset, // Dataset
         PlotOrientation.VERTICAL, // Plot Orientation
         true, // Show Legend
@@ -66,16 +68,21 @@ public class trackInfoPanel extends javax.swing.JFrame {
         
         dataset.addSeries(temp);
         dataset.addSeries(hum);
+        dataset.addSeries(noppm);
+        dataset.addSeries(coppm);
         dataset.addSeries(gaz1);
         dataset.addSeries(gaz2);
         dataset.addSeries(acc);
+        
+        
+        
         
         jPanel1.setLayout(new java.awt.BorderLayout());
         jPanel1.add(chartPanel,BorderLayout.CENTER);
         jPanel1.validate();
         jPanel1.setSize(1000,400);
         
-        BeMapEditor.trackOrganiser.getData().addDataToGraph(temp,hum,gaz1,gaz2,acc);
+        BeMapEditor.trackOrganiser.getData().addDataToGraph(temp,hum,gaz1,gaz2,acc,coppm,noppm);
     }
 
     /**

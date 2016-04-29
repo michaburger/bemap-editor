@@ -83,21 +83,21 @@ public class DataPoint {
     public String getDataPointCSV(){
         String dataPoint = "";
         String separator = ",";
+        long alt_placeholder = 777;
         
-        dataPoint += id + separator;
+        dataPoint += getCSVDateFormat() + separator;
         dataPoint += deviceUsrID + separator;
         dataPoint += trackID + separator;
-        dataPoint += getCSVDateFormat() + separator;
-        dataPoint += lat + separator;
         dataPoint += lon + separator;
-        dataPoint += temp/100.0 + separator;
-        dataPoint += hum/100.0 + separator;
-        dataPoint += co + separator;
-        dataPoint += no2 + separator;
+        dataPoint += lat + separator;
+        dataPoint += alt_placeholder + separator;
         dataPoint += vib + separator;
         dataPoint += convertCOppm() + separator;
         dataPoint += convertNOppm() + separator;
-        
+        dataPoint += co + separator;
+        dataPoint += no2 + separator;
+        dataPoint += temp/100.0 + separator;
+        dataPoint += hum/100.0 + separator;
         dataPoint += "\n";
         
         return dataPoint;

@@ -30,13 +30,12 @@ public class realTimeWindow extends javax.swing.JFrame {
     int graphIndex = 0;
     XYSeries temp = new XYSeries("Temperature °C");
     XYSeries hum = new XYSeries("Humidity %");
-    XYSeries gaz1 = new XYSeries("CO level offset -150");
-    XYSeries gaz2 = new XYSeries("NO2 level offset -150");
-    XYSeries ax = new XYSeries("X");
-    XYSeries ay = new XYSeries("Y");
-    XYSeries az = new XYSeries("Z");
+    XYSeries gaz1 = new XYSeries("CO level RAW");
+    XYSeries gaz2 = new XYSeries("NO2 level RAW");
+    XYSeries coppm = new XYSeries("CO level PPM");
+    XYSeries noppm = new XYSeries("NO2 level PPM");
+    
     XYSeriesCollection dataset = new XYSeriesCollection();
-    XYSeriesCollection accDataset = new XYSeriesCollection();
     
     private final int INTERVAL = 300;
     
@@ -46,27 +45,16 @@ public class realTimeWindow extends javax.swing.JFrame {
         JFreeChart chart = ChartFactory.createXYLineChart(
         "BeMap Realtime Sensor Values", // Title
         "#", // x-axis Label
-        "°C – % – ppm ", // y-axis Label
+        "°C – % – RAW / ppm ", // y-axis Label
         dataset, // Dataset
         PlotOrientation.VERTICAL, // Plot Orientation
         true, // Show Legend
         true, // Use tooltips
         false // Configure chart to generate URLs?
         );
-    // Generate the graph
-        JFreeChart accChart = ChartFactory.createXYLineChart(
-        "BeMap Accelerometer  Values", // Title
-        "#", // x-axis Label
-        "G", // y-axis Label
-        accDataset, // Dataset
-        PlotOrientation.VERTICAL, // Plot Orientation
-        true, // Show Legend
-        true, // Use tooltips
-        false // Configure chart to generate URLs?
-        );
+    
         
     ChartPanel chartPanel = new ChartPanel(chart);
-    ChartPanel accChartPanel = new ChartPanel(accChart);
     fakeThermometer fakeThermometer = new fakeThermometer();
     Timer timer = new Timer();
     
@@ -97,37 +85,35 @@ public class realTimeWindow extends javax.swing.JFrame {
         // Add the series to your data set
         dataset.addSeries(temp);
         dataset.addSeries(hum);
+        dataset.addSeries(coppm);
+        dataset.addSeries(noppm);
         dataset.addSeries(gaz1);
         dataset.addSeries(gaz2);
-        
-        accDataset.addSeries(ax);
-        accDataset.addSeries(ay);
-        accDataset.addSeries(az);
         
         graphPanel.setLayout(new java.awt.BorderLayout());
         graphPanel.add(chartPanel,BorderLayout.CENTER);
         graphPanel.validate();
         graphPanel.setSize(600,400);
         
+        /* Acceleromètre enlevé
         accPanel.setLayout(new java.awt.BorderLayout());
         accPanel.add(accChartPanel,BorderLayout.CENTER);
         accPanel.validate();
         accPanel.setSize(300,300);
+        */
         
         timer.schedule(new GetNewValues(), 0, INTERVAL);
         
     }
     
-    public void addToGraph(double tempval, double humval, int gazval1, int gazval2, double vax, double vay, double vaz){
+    public void addToGraph(double tempval, double humval, int gazval1, int gazval2, double coppmval, double noppmval){
         temp.add(graphIndex,tempval);
         hum.add(graphIndex,humval);
+        coppm.add(graphIndex,coppmval);
+        noppm.add(graphIndex,noppmval);
         gaz1.add(graphIndex,gazval1);
         gaz2.add(graphIndex,gazval2);
-        ax.add(graphIndex,vax);
-        ay.add(graphIndex,vay);
-        az.add(graphIndex,vaz);
         chartPanel.repaint();
-        accChartPanel.repaint();
         graphIndex++;
         
     }
@@ -141,8 +127,8 @@ public class realTimeWindow extends javax.swing.JFrame {
             BeMapEditor.mainWindow.append(realTimeValues.toString());
             if(realTimeValues.getInt("err")==0){
             addToGraph(realTimeValues.getDouble("temp"),realTimeValues.getDouble("hum"),
-                    realTimeValues.getInt("gaz1")-150,realTimeValues.getInt("gaz2")-150,
-                    realTimeValues.getDouble("ax"),realTimeValues.getDouble("ay"),realTimeValues.getDouble("az"));
+                    realTimeValues.getInt("gaz1"),realTimeValues.getInt("gaz2"),convertCOPPM(realTimeValues.getInt("gaz1")),
+                            convertNOPPM(realTimeValues.getInt("gaz2")));
             }
             } catch (InterruptedException ex) {
             Logger.getLogger(realTimeWindow.class.getName()).log(Level.SEVERE, null, ex);
@@ -151,6 +137,14 @@ public class realTimeWindow extends javax.swing.JFrame {
         }
     }
  }
+   
+   private double convertNOPPM(int no2){
+       return Math.pow(10,(0.809+1.031*Math.log10((1024.0-no2)/no2)));
+   }
+   
+   private double convertCOPPM(int co){
+       return Math.pow(10,(0.64-1.21*Math.log10((1024.0-co)/co)));
+   }
     
   
 
@@ -165,7 +159,6 @@ public class realTimeWindow extends javax.swing.JFrame {
 
         jTextField1 = new javax.swing.JTextField();
         graphPanel = new javax.swing.JPanel();
-        accPanel = new javax.swing.JPanel();
 
         jTextField1.setText("jTextField1");
 
@@ -184,20 +177,6 @@ public class realTimeWindow extends javax.swing.JFrame {
             .addGap(0, 408, Short.MAX_VALUE)
         );
 
-        accPanel.setPreferredSize(new java.awt.Dimension(300, 300));
-        accPanel.setRequestFocusEnabled(false);
-
-        javax.swing.GroupLayout accPanelLayout = new javax.swing.GroupLayout(accPanel);
-        accPanel.setLayout(accPanelLayout);
-        accPanelLayout.setHorizontalGroup(
-            accPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 457, Short.MAX_VALUE)
-        );
-        accPanelLayout.setVerticalGroup(
-            accPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
-        );
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -205,16 +184,12 @@ public class realTimeWindow extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(graphPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(accPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 457, Short.MAX_VALUE)
-                .addContainerGap())
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(graphPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 408, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(accPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(graphPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 408, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 12, Short.MAX_VALUE))
         );
 
@@ -223,7 +198,6 @@ public class realTimeWindow extends javax.swing.JFrame {
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel accPanel;
     private javax.swing.JPanel graphPanel;
     private javax.swing.JTextField jTextField1;
     // End of variables declaration//GEN-END:variables

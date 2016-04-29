@@ -362,7 +362,7 @@ public class Data {
         }
     }
     
-    public void addDataToGraph(XYSeries temp,XYSeries hum,XYSeries gaz1,XYSeries gaz2,XYSeries acc){
+    public void addDataToGraph(XYSeries temp,XYSeries hum,XYSeries gaz1,XYSeries gaz2,XYSeries acc, XYSeries coppm, XYSeries noppm){
         
         
           for (DataPoint dp : pointList) {
@@ -372,6 +372,8 @@ public class Data {
               gaz1.add(dp.getDateObject().getTime(),dp.co());
               gaz2.add(dp.getDateObject().getTime(),dp.no2());
               acc.add(dp.getDateObject().getTime(),dp.vib());
+              coppm.add(dp.getDateObject().getTime(),dp.convertCOppm());
+              noppm.add(dp.getDateObject().getTime(),dp.convertNOppm());
               }
               //else if (DATA_DEBUG) BeMapEditor.mainWindow.append("Point ignored due to time slider\n");
           }
