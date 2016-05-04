@@ -22,7 +22,7 @@ import org.json.JSONObject;
 public class TrackOrganiser extends javax.swing.JFrame {
 
     
-    private static final boolean TRACK_DEBUG = false;
+    private static final boolean TRACK_DEBUG = true;
     public static final int GLOBAL = 0;
     public static final int PUBLIC = 1;
     private static final int MIN_NB_POINTS_IMPORT = 50;
@@ -70,7 +70,6 @@ public class TrackOrganiser extends javax.swing.JFrame {
         trackList.add(currentTrack);
         trackChooser.addItem(getDisplayName(currentTrack));
         currentTrack.importJSONList(gpsData);
-        
         updateTrackChooser();
     }
     
@@ -144,13 +143,18 @@ public class TrackOrganiser extends javax.swing.JFrame {
         trackList.clear();
     }
     
+    public void deleteTrack(){
+        deleteTrack(trackChooser.getSelectedIndex());
+    }
     
-    public void deleteCurrentTrack(){
-        if(currentTrack.getID()==0||currentTrack.getID()==1){
+    
+    public void deleteTrack(int indexToDelete){
+        if(indexToDelete==0||indexToDelete==1){
             BeMapEditor.mainWindow.append("\nError: Public tracks cannot be deleted!");
         }
         else{
-            trackList.remove(trackChooser.getSelectedIndex());
+            trackList.remove(indexToDelete);
+            if(TRACK_DEBUG) BeMapEditor.mainWindow.append("\nTrack "+indexToDelete+" deleted");
             updateTrackChooser();
             BeMapEditor.mainWindow.updateMap();
         }
@@ -176,6 +180,9 @@ public class TrackOrganiser extends javax.swing.JFrame {
     public void postImportTreatment(JProgressBar progressBar) throws JSONException{
         BeMapEditor.mainWindow.append("\nTreatment...");
         
+        int indexOfImportedTrack = currentTrack.getID();
+        if(TRACK_DEBUG) BeMapEditor.mainWindow.append("\nImport track:"+indexOfImportedTrack);
+        
         Data importTrack = currentTrack;
         int firstTrackID = currentTrack.getFirstTrackID();
         int lastTrackID = currentTrack.getLastTrackID();
@@ -196,7 +203,11 @@ public class TrackOrganiser extends javax.swing.JFrame {
             else if(TRACK_DEBUG) BeMapEditor.mainWindow.append("\nTrack "+i+" has "+nb+" points: No track created!");
         }
         
+        //delete import track
+        deleteTrack(indexOfImportedTrack);
+        
         BeMapEditor.mainWindow.append("\nTreatment ok!");
+        
         
     }
     
@@ -469,7 +480,7 @@ public class TrackOrganiser extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void deleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
-        deleteCurrentTrack();
+        deleteTrack();
     }//GEN-LAST:event_deleteButtonActionPerformed
 
     private void closeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeButtonActionPerformed

@@ -173,7 +173,7 @@ public int importDataFromDevice(JProgressBar progressBar, JTextArea status) thro
                 else if (usr == -1){
                     //code for getting usr id from server
                     //$ORUSR,25*11\n
-                    status.append("\nError: Getting user ID from server not yet supported!");
+                    status.append("\nError: No user ID set!");
                     BeMapEditor.mainWindow.setUsr(-1);
                 }
                 else {
@@ -181,6 +181,16 @@ public int importDataFromDevice(JProgressBar progressBar, JTextArea status) thro
                     return -1;
                 }
                 
+                //import settings
+                serialPort.writeBytes("$ORCFG*11\n".getBytes());//Write data to port
+                Thread.sleep(WAIT_MS);
+                String configString = serialPort.readString();
+                if(decodeSettings(configString)==1 && SERIAL_DEBUG) {
+                    BeMapEditor.mainWindow.append("\nSettings decoded");
+                }
+                else BeMapEditor.mainWindow.append("\nError decoding settings");
+                
+                //Start importing points
                 serialPort.writeBytes("$ORNUM*11\n".getBytes());
                 Thread.sleep(WAIT_MS);
                 String numberString = serialPort.readString();
@@ -361,6 +371,65 @@ private int decodeUserID(String userString){
            
         }
     return -1;
+    
+    
+}
+
+private int decodeSettings(String config){
+    //decompose the received data
+        String[] lines = config.split("\n");
+        
+        for (int i=0; i<lines.length; i++){
+            if(SERIAL_DEBUG) BeMapEditor.mainWindow.append(lines[i]+"\n");
+            String[] seperated = lines[i].split(",");
+            
+            if("$BMCFG".equals(seperated[0])){
+               
+               /**
+                * seperated[1]: Fw-version
+                * seperated[2]: battery %
+                * seperated[3]: memory %
+                * seperated[4]: sleeptime
+                * seperated[5]: tracking time
+                * seperated[6]: sensor gaz
+                * seperated[7]: temp/hum
+                * seperated[8]: timeout fixed lost
+                * seperated[9]: preheat time
+                * seperated[10]: accl- bounce threshold
+                * seperated[11]: accl- bounce time
+                * seperated[12]: accl- inut threshold
+                * seperated[13]: accl Act threshold
+                * seperated[14]: accl inut time
+                * */
+               int firmwareVersion = Integer.parseInt(seperated[1]);
+               int batteryState = Integer.parseInt(seperated[2]);
+               int memoryState = Integer.parseInt(seperated[3]);
+               int sleepTime = Integer.parseInt(seperated[4]);
+               int trackingTime = Integer.parseInt(seperated[5]);
+               int gasInterval = Integer.parseInt(seperated[6]);
+               int tempHumInterval = Integer.parseInt(seperated[7]);
+               int timeoutFixLost = Integer.parseInt(seperated[8]);
+               int preheatTime = Integer.parseInt(seperated[9]);
+               int accBounceThr = Integer.parseInt(seperated[10]);
+               int accBounceTime = Integer.parseInt(seperated[11]);
+               int AccInutThr = Integer.parseInt(seperated[12]);
+               int AccActTime = Integer.parseInt(seperated[13]);
+               int AccInutTime = Integer.parseInt(seperated[14]);
+               
+               
+               BeMapEditor.settings.setConfig(firmwareVersion,batteryState,
+                       memoryState,sleepTime,trackingTime,gasInterval,tempHumInterval,
+                       timeoutFixLost,preheatTime,accBounceThr,accBounceTime,
+                       AccInutThr,AccActTime,AccInutTime);
+               
+            }
+            else if("$BMERR".equals(seperated[0])){
+                return -1;
+            }
+           
+        }
+    return -1;
+
 }
 
 class PortSearchTask implements Callable<String> {
