@@ -145,7 +145,34 @@ public JSONObject getRealTimeData() throws InterruptedException, JSONException{
             }
       return null;  
 }
-        
+     
+public String writeData(String dataToWrite){
+    if("Error - no Port found".equals(serialPortName)) return "ERROR";
+    else{
+        try {
+            SerialPort serialPort = new SerialPort(serialPortName);
+            
+            serialPort.openPort();//Open serial port
+            serialPort.setParams(SerialPort.BAUDRATE_115200,
+                    SerialPort.DATABITS_8,
+                    SerialPort.STOPBITS_1,
+                    SerialPort.PARITY_NONE);//Set params. Also you can set params by this string: serialPort.setParams(9600, 8, 1, 0);
+            
+            serialPort.writeBytes(dataToWrite.getBytes());//Write data to port
+            Thread.sleep(WAIT_MS*2);
+            String answer = serialPort.readString();
+            serialPort.closePort();
+            return answer;
+        } catch (SerialPortException ex) {
+            Logger.getLogger(SimpleSerial.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(SimpleSerial.class.getName()).log(Level.SEVERE, null, ex);
+        }
+                
+    }    
+    return "ERROR";
+}
+    
 
 
 //returns the number of points stored or -1 if error

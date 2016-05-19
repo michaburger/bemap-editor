@@ -31,7 +31,7 @@ public class trackInfoPanel extends javax.swing.JFrame {
     // Generate the graph
         JFreeChart chart = ChartFactory.createXYLineChart(
         "Bicycle Track Illustration", // Title
-        "time (seconds since midnight)", // x-axis Label
+        "Time", // x-axis Label
         "°C – % – ppm / RAW ", // y-axis Label
         dataset, // Dataset
         PlotOrientation.VERTICAL, // Plot Orientation

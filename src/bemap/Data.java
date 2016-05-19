@@ -55,9 +55,27 @@ public class Data {
     private static final int PUBLIC = 1;
     private Modeling model = new Modeling();
     
+    
     private static final int NB_POINTS = 18; //for polygon, 360/n must be an int
-    private static final double GLOBAL_R = 0.0003;
+    //double cloudRadius = 0.0003;
           
+    private double coRedLevel = 0;
+    private double coGreenLevel = 0;
+    private double noRedLevel = 0;
+    private double noGreenLevel = 0;
+    
+    public void setLevels(double coGreenLevel, double coRedLevel, double noGreenLevel,
+                            double noRedLevel){
+        this.coRedLevel = coRedLevel;
+        this.coGreenLevel = coGreenLevel;
+        this.noGreenLevel = noGreenLevel;
+        this.noRedLevel = noRedLevel;
+    }
+    
+    public double getCoRedLevel(){return coRedLevel;}
+    public double getCoGreenLevel(){return coGreenLevel;}
+    public double getNoRedLevel(){return noRedLevel;}
+    public double getNoGreenLevel(){return noGreenLevel;}
     
     //String "buffer" for data input:
     private String outputDataString = "";
@@ -355,6 +373,8 @@ public class Data {
               //for every point dp, do
               //TODO: only draw points in the time spread
               if(!BeMapEditor.mainWindow.timeSliderActive()){
+              
+                  
               drawPoint(dp.lat(),dp.lon(),dp.getSensor(BeMapEditor.mainWindow.getSensorNumber()),BeMapEditor.mainWindow.getSensorNumber(),style);
               }
               //else if (DATA_DEBUG) BeMapEditor.mainWindow.append("Point ignored due to time slider\n");
@@ -362,13 +382,14 @@ public class Data {
         }
     }
     
+    
     public void addDataToGraph(XYSeries temp,XYSeries hum,XYSeries gaz1,XYSeries gaz2,XYSeries acc, XYSeries coppm, XYSeries noppm){
         
         
           for (DataPoint dp : pointList) {
               {
-              temp.add(dp.getDateObject().getTime(),dp.temp()/100.0);
-              hum.add(dp.getDateObject().getTime(),dp.hum()/100.0);
+              temp.add(dp.getDateObject().getTime(),dp.temp());
+              hum.add(dp.getDateObject().getTime(),dp.hum());
               gaz1.add(dp.getDateObject().getTime(),dp.co());
               gaz2.add(dp.getDateObject().getTime(),dp.no2());
               acc.add(dp.getDateObject().getTime(),dp.vib());
@@ -598,8 +619,8 @@ public class Data {
        
         for(int i=0; i<NB_POINTS;i++){
             int alpha = i*dalpha;
-            double dx = GLOBAL_R * Math.cos(alpha);
-            double dy = GLOBAL_R * Math.sin(alpha);
+            double dx = BeMapEditor.settings.getCloudRadius() * Math.cos(alpha);
+            double dy = BeMapEditor.settings.getCloudRadius() * Math.sin(alpha);
             Coordinate c = new Coordinate(lat+dy,lon+dx);
             coords.add(c);
         }

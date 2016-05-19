@@ -252,14 +252,14 @@ public class MainWindow extends javax.swing.JFrame {
      * @param jsonString JSONObjects containing multiple tracks
      * @throws JSONException 
      */
-    private void importMultipleLayers(String jsonString) throws JSONException{
+    private void importMultipleLayers(String jsonString) throws JSONException {
         
         JSONObject tracks = new JSONObject(jsonString);
         String[] trackNames = JSONObject.getNames(tracks);
         
         //for every data layer, import points
         for(int j=0; j<trackNames.length; j++) {
-          //get the array for the track i.
+          //get the array for the track j.
           JSONArray gpsData = new JSONArray(tracks.getJSONArray(trackNames[j]).toString());
           
           //do not create a new layer for the public points, but add them to the existing
@@ -481,32 +481,24 @@ public class MainWindow extends javax.swing.JFrame {
          if(WINDOW_DEBUG) append("Export button pressed\nUser ID = "+usr+"\n");
        //get a filename in the chosen directory that is not yet used, beginning
        //with data
-       if(usr == -1){
-            //no user has been defined
-            append(ERROR_MSG_NO_ID_FOUND);
-       }
-       else{ 
+       
         String path = fileChooserGetPath();
         if(!fileExists(path + BeMapEditor.settings.getExportName()+DEFAULT_EXTENSION)){
             exportToFile(path + BeMapEditor.settings.getExportName()+DEFAULT_EXTENSION);
         }
         else append(ERROR_MSG_FILE_EXISTS);
-       }
+       
     }
     
     private void saveCSV(){
         
-        if(usr == -1){
-            //no user has been defined
-            append(ERROR_MSG_NO_ID_FOUND);
-       }
-       else{ 
+        
         String path = fileChooserGetPath();
         if(!fileExists(path + BeMapEditor.settings.getExportName()+DEFAULT_CSV_EXTENSION)){
             exportToFile(path + BeMapEditor.settings.getExportName()+DEFAULT_CSV_EXTENSION,"CSV");
         }
         else append(ERROR_MSG_FILE_EXISTS);
-       }
+       
     }
     
     
@@ -618,7 +610,6 @@ public class MainWindow extends javax.swing.JFrame {
         memoryBar = new javax.swing.JProgressBar();
         jLabel9 = new javax.swing.JLabel();
         saveButton = new javax.swing.JButton();
-        jLabel2 = new javax.swing.JLabel();
         sensorSlider = new javax.swing.JSlider();
         timeSlider = new javax.swing.JSlider();
         jLabel6 = new javax.swing.JLabel();
@@ -739,9 +730,6 @@ public class MainWindow extends javax.swing.JFrame {
                 saveButtonActionPerformed(evt);
             }
         });
-
-        jLabel2.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
-        jLabel2.setText("memory state:");
 
         sensorSlider.setMajorTickSpacing(1);
         sensorSlider.setMinimum(1);
@@ -1035,9 +1023,7 @@ public class MainWindow extends javax.swing.JFrame {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jScrollPane1)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(jLabel2)
-                                .addGap(18, 18, 18)
-                                .addComponent(memoryBar, javax.swing.GroupLayout.PREFERRED_SIZE, 273, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(memoryBar, javax.swing.GroupLayout.PREFERRED_SIZE, 381, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(jLabel11)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -1073,10 +1059,8 @@ public class MainWindow extends javax.swing.JFrame {
                             .addComponent(jLabel9)
                             .addComponent(jLabel6))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel2)
-                            .addComponent(memoryBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addGap(7, 7, 7)
+                        .addComponent(memoryBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(11, 11, 11)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
@@ -1346,7 +1330,6 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JCheckBoxMenuItem jCheckBoxMenuItem2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel11;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
@@ -1405,6 +1388,7 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JSlider timeSlider;
     private javax.swing.JTextField trackField;
     // End of variables declaration//GEN-END:variables
+
 
     
 }

@@ -107,8 +107,8 @@ public class realTimeWindow extends javax.swing.JFrame {
     }
     
     public void addToGraph(double tempval, double humval, int gazval1, int gazval2, double coppmval, double noppmval){
-        temp.add(graphIndex,tempval);
-        hum.add(graphIndex,humval);
+        temp.add(graphIndex,tempval/100);
+        hum.add(graphIndex,humval/100);
         coppm.add(graphIndex,coppmval);
         noppm.add(graphIndex,noppmval);
         gaz1.add(graphIndex,gazval1);

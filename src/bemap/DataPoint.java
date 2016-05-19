@@ -229,7 +229,6 @@ public class DataPoint {
         d.setHours(hour);
         d.setMinutes(min);
         d.setSeconds(sec);
-        System.out.println(d);
         
         return d;
     }
@@ -274,9 +273,24 @@ public class DataPoint {
      */
     public int getSensor(int sensorNb){
         switch(sensorNb){
-            case SENSOR_CO: return co;
+            case SENSOR_CO: double minCo = (double) BeMapEditor.trackOrganiser.getData().getCoGreenLevel();
+                            double maxCo = (double) BeMapEditor.trackOrganiser.getData().getCoRedLevel();
+                            double ppmCo = convertCOppm();
+                            //BeMapEditor.mainWindow.append("\nppmCo: "+ppmCo);
+                            //BeMapEditor.mainWindow.append("\nminCo: "+minCo);
+                            //BeMapEditor.mainWindow.append("\nmaxCo: "+maxCo);
+                            if(ppmCo <= minCo) return 0;
+                            else if (ppmCo >= maxCo) return 255;
+                            int value = (int) (255*((ppmCo-minCo)/(maxCo-minCo)));
+                            //BeMapEditor.mainWindow.append("\nColor: "+maxCo);
+                            return value;
                     
-            case SENSOR_NO: return no2;
+            case SENSOR_NO: double minNo = BeMapEditor.trackOrganiser.getData().getNoGreenLevel();
+                            double maxNo = BeMapEditor.trackOrganiser.getData().getNoRedLevel();
+                            double ppmNo = convertNOppm();
+                            if(ppmNo <= minNo) return 0;
+                            else if (ppmNo >= maxNo) return 255;
+                            return (int) (255*((ppmNo-minNo)/(maxNo-minNo))); 
                     
             case SENSOR_HUM: return hum;
                     
@@ -296,9 +310,10 @@ public class DataPoint {
         return Math.pow(10,(0.809+1.031*Math.log10((1024.0-no2)/no2)));
     }
     
+    
     public static Color chooseColor(int value, int type, int opacity){
         int r=0,g=0,b=0;
-        value = (value /4)-1;
+        //value = (value /4)-1;
         switch(type) {
             case TYPE_GREY: r=g=b=128;
                             break;
@@ -344,7 +359,22 @@ public class DataPoint {
                               }
                               if(value<0||value>255) r=g=b=128; //no value
                               break;
-        
+            case TYPE_POLL2:  if (value < 150) value = 150; //rescale
+                              if (value > 200) value = 200;
+                              value = (int) ((int) (value - 150)*5.1);
+                              
+                             
+                              if (value<=127){
+                                 g = 200;
+                                 r = 2*value*4/5;
+                              }
+                              else{
+                                 g = (512 - 2*value -2)*4/5;
+                                 r = 200;
+                              }
+                              if(value<0||value>255) r=g=b=128; //no value
+                              break;
+        /*
             case TYPE_POLL2:  if (value < 130) value = 130; //rescale
                               if (value > 180) value = 180;
                               value = (int) ((int) (value - 130)*5.1);
@@ -359,6 +389,7 @@ public class DataPoint {
                               }
                               if(value<0||value>255) r=g=b=128; //no value
                               break;
+*/
             case TYPE_ACC:  if (value < 0) {
                                 r=g=b=128;
                                 break;
