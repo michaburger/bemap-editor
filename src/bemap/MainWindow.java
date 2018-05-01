@@ -14,6 +14,7 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.lang.*;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -274,7 +275,7 @@ public class MainWindow extends javax.swing.JFrame {
         
         
     }
- 
+     
 /**
  * Initialize the time slider (get the oldest and newest point of the track and 
  * update the slider).
@@ -323,6 +324,32 @@ public class MainWindow extends javax.swing.JFrame {
         if(WINDOW_DEBUG) append(file.toString());
         //import from selected file
         importFromFile(file.toString());
+
+    }
+    
+    /**
+  * Opens a JFileChooser and the user can choose the file he wants to import,
+ *  the file is only imported when a valid path has been chosen.
+  */
+    private void openFileChooserToImportCSV(){
+        JFileChooser chooser = new JFileChooser();
+        
+        //only show .bemap files
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("CSV file", "csv");
+        chooser.setFileFilter(filter);
+        
+        chooser.setDialogTitle("Choose a file with readable text and .csv extension. ATTENTION: The table has to be formatted exactly the same as in the output format!");
+        if (chooser.showOpenDialog(null) == JFileChooser.CANCEL_OPTION)
+            statusArea.append("Error: File choosing aborted\n");
+        File file = new File(chooser.getCurrentDirectory(), chooser.getSelectedFile().getName());
+
+        if(WINDOW_DEBUG) append(file.toString());
+        try {
+            //import from selected file
+            importFromCSV(file.toString());
+        } catch (JSONException ex) {
+            Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
     }
     
@@ -432,6 +459,84 @@ public class MainWindow extends javax.swing.JFrame {
         }
     }
     
+    private void importFromCSV(String filename) throws JSONException{
+        String csvData = "";
+        String line = "";
+        
+        try {
+            InputStream inputStream = new FileInputStream(filename);
+            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+            BufferedReader br = new BufferedReader(inputStreamReader);
+            
+            //create gpsData as JSON in the correct format
+            JSONArray gpsData = new JSONArray();
+            
+            boolean firstLineRead = false;
+            while ((line = br.readLine()) != null){
+                if(firstLineRead){
+                    JSONObject point = new JSONObject();
+                    String[] linePoints = line.split(",");
+                    String[] dateTime = linePoints[0].split(" ");
+                    
+                    //parse date
+                    String [] dateArr = dateTime[0].split("-");
+                    int dd = Integer.parseInt(dateArr[0]);
+                    int MM = Integer.parseInt(dateArr[1]);
+                    int yy = Integer.parseInt(dateArr[2]);
+                    String date = String.format("%02d%02d%02d",dd,MM,yy);
+                    
+                    String [] timeArr = dateTime[1].split(":");
+                    int hh = Integer.parseInt(timeArr[0]);
+                    int mm = Integer.parseInt(timeArr[1]);
+                    int ss = Integer.parseInt(timeArr[2]);
+                    int cc = 0;
+                    String time = String.format("%02d%02d%02d%02d",hh,mm,ss,cc);
+                    
+                    //parse float
+                    float humf = Float.parseFloat(linePoints[12]);
+                    float tempf = Float.parseFloat(linePoints[11]);
+                    int hum = (int) (100*humf);
+                    int temp = (int) (100*tempf);
+                    
+                    
+                    if(linePoints.length == 13){
+                        point.put("track",BeMapEditor.trackOrganiser.getIDnextTrack());
+                        point.put("usr",linePoints[1]);
+                        point.put("lon",linePoints[3]);
+                        point.put("lat",linePoints[4]);
+                        point.put("date",date);
+                        point.put("time",time);
+                        point.put("s1",linePoints[9]);
+                        point.put("s2",linePoints[10]);
+                        point.put("s3",hum);
+                        point.put("s4",temp);
+                        point.put("s5", linePoints[6]); 
+                        point.put("sent",true); //we don't want custom CSV data to be sent to the server
+
+                        gpsData.put(point);
+                    }
+                }
+                firstLineRead = true;
+            }
+            
+            if(WINDOW_DEBUG) BeMapEditor.mainWindow.append(gpsData.toString());
+
+            //every line is a datapoint. Put all to the same track
+            BeMapEditor.trackOrganiser.createNewTrack(filename,gpsData);
+            
+            //importMultipleLayers(jsonData);
+            append("File "+filename + " successfully imported\n");
+            
+            
+        } catch (FileNotFoundException ex) {
+            append("No file found to import\n");
+            Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+        } //catch (JSONException ex) {
+            //Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+       // }
+    }
 
     /**
      * Imports a file from the default filepath.
@@ -629,6 +734,7 @@ public class MainWindow extends javax.swing.JFrame {
         jSeparator2 = new javax.swing.JPopupMenu.Separator();
         fileMenu = new javax.swing.JMenu();
         openBar = new javax.swing.JMenuItem();
+        jMenuItem14 = new javax.swing.JMenuItem();
         jSeparator5 = new javax.swing.JPopupMenu.Separator();
         saveBar = new javax.swing.JMenuItem();
         jMenuItem13 = new javax.swing.JMenuItem();
@@ -815,6 +921,14 @@ public class MainWindow extends javax.swing.JFrame {
             }
         });
         fileMenu.add(openBar);
+
+        jMenuItem14.setText("Import from CSV...");
+        jMenuItem14.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem14ActionPerformed(evt);
+            }
+        });
+        fileMenu.add(jMenuItem14);
         fileMenu.add(jSeparator5);
 
         saveBar.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
@@ -1134,9 +1248,6 @@ public class MainWindow extends javax.swing.JFrame {
     }//GEN-LAST:event_mapMouseClicked
 
     
-    
-   
-    
     private void aboutBarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aboutBarActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_aboutBarActionPerformed
@@ -1305,6 +1416,10 @@ public class MainWindow extends javax.swing.JFrame {
         
     }//GEN-LAST:event_enableImportMenuActionPerformed
 
+    private void jMenuItem14ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem14ActionPerformed
+        openFileChooserToImportCSV();
+    }//GEN-LAST:event_jMenuItem14ActionPerformed
+
     
     
     /**
@@ -1342,6 +1457,7 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem11;
     private javax.swing.JMenuItem jMenuItem12;
     private javax.swing.JMenuItem jMenuItem13;
+    private javax.swing.JMenuItem jMenuItem14;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JMenuItem jMenuItem4;
