@@ -54,6 +54,9 @@ public class TrackOrganiser extends javax.swing.JFrame {
         }
     }
     
+    public int getIDnextTrack(){
+        return idCounter;
+    }
     
     public void createNewTrack(String name){
         currentTrack = new Data(idCounter,name); //create first data layer remove
